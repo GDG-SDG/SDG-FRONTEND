@@ -1,0 +1,98 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1779411193311,
+  "projectRoot": "C:\\Users\\intern\\project\\agriguard\\SDG-FRONTEND\\.claude\\worktrees\\jovial-greider-2fe018",
+  "techStack": {
+    "languages": [],
+    "frameworks": [],
+    "packageManager": null,
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "cd \"C:\\Users\\intern\\project\\agriguard\\SDG-FRONTEND\\.claude\\worktrees\\jovial-greider-2fe018\" && npm run build 2>&1",
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {},
+  "hotPaths": [
+    {
+      "path": "README.md",
+      "accessCount": 1,
+      "lastAccessed": 1779411249361,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 1,
+      "lastAccessed": 1779411268527,
+      "type": "file"
+    },
+    {
+      "path": "tsconfig.json",
+      "accessCount": 1,
+      "lastAccessed": 1779411278761,
+      "type": "file"
+    },
+    {
+      "path": "next.config.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779411292104,
+      "type": "file"
+    },
+    {
+      "path": "app\\globals.css",
+      "accessCount": 1,
+      "lastAccessed": 1779411348950,
+      "type": "file"
+    },
+    {
+      "path": "app\\layout.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1779411364545,
+      "type": "file"
+    },
+    {
+      "path": "app\\providers.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1779411375218,
+      "type": "file"
+    },
+    {
+      "path": "app\\page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1779411387331,
+      "type": "file"
+    },
+    {
+      "path": "lib\\utils.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779411392928,
+      "type": "file"
+    },
+    {
+      "path": "next.config.mjs",
+      "accessCount": 1,
+      "lastAccessed": 1779411792251,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
