@@ -49,3 +49,48 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes scanLine {
+  0%,
+  100% {
+    transform: translateY(-60px);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(60px);
+    opacity: 0.8;
+  }
+}
+
+@keyframes spin-fast {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-6px);
+  }
+}
+
+.scan-line {
+  animation: scanLine 3s ease-in-out infinite;
+}
+
+.spin-anim {
+  animation: spin-fast 0.8s linear infinite;
+}
+
+.bounce-dot {
+  animation: bounce 1.2s ease-in-out infinite;
+}
+
+.chat-input:focus {
+  border-color: #2d7a3e !important;
+}
