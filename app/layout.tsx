@@ -6,6 +6,7 @@ import { Providers } from "./providers";
 const notoSansKR = Noto_Sans_KR({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
+  preload: false,
 });
 
 export const metadata: Metadata = {

@@ -9,11 +9,14 @@ import {
   Thermometer,
   CloudRain,
 } from "lucide-react";
+import Image from "next/image";
 import {
   DIAGNOSIS_RECORDS,
   getSeverityColor,
   Severity,
 } from "@/lib/data/mockData";
+
+const TODAY = new Date();
 
 const LineChart = dynamic(() => import("recharts").then((m) => m.LineChart), {
   ssr: false,
@@ -42,7 +45,7 @@ const ResponsiveContainer = dynamic(
 const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 export default function CalendarPage() {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1));
+  const [currentDate, setCurrentDate] = useState(TODAY);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const year = currentDate.getFullYear();
@@ -78,8 +81,8 @@ export default function CalendarPage() {
     });
     return Object.entries(stats)
       .filter(([, data]) => data.총진단 > 0)
-      .map(([day, data], index) => ({
-        id: `${year}-${month}-${day}-${index}`,
+      .map(([day, data]) => ({
+        id: `${year}-${month + 1}-${day}`,
         날짜: `${month + 1}/${day}`,
         심각: data.심각,
         보통: data.보통,
@@ -90,8 +93,9 @@ export default function CalendarPage() {
   const selectedDiagnoses = selectedDate
     ? getDiagnosesForDate(selectedDate)
     : [];
-  const selectedWeather =
-    selectedDiagnoses[0]?.weather ?? DIAGNOSIS_RECORDS[0]?.weather;
+  const selectedWeather = selectedDate
+    ? (selectedDiagnoses[0]?.weather ?? null)
+    : null;
 
   const formatMonthKr = () => `${year}년 ${month + 1}월`;
 
@@ -204,7 +208,10 @@ export default function CalendarPage() {
             const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
             const dots = getDotsForDate(dateStr);
             const isSelected = selectedDate === dateStr;
-            const isToday = day === 30 && month === 3 && year === 2026;
+            const isToday =
+              day === TODAY.getDate() &&
+              month === TODAY.getMonth() &&
+              year === TODAY.getFullYear();
             const colIndex = (i + firstDay) % 7;
 
             return (
@@ -248,7 +255,7 @@ export default function CalendarPage() {
                 {dots.length > 0 && (
                   <div className="flex gap-0.5 mt-0.5">
                     {dots.slice(0, 3).map((sev, si) => {
-                      const colors = getSeverityColor(sev as Severity);
+                      const colors = getSeverityColor(sev);
                       return (
                         <div
                           key={si}
@@ -335,11 +342,15 @@ export default function CalendarPage() {
                           border: "1px solid #F0F0F0",
                         }}
                       >
-                        <img
-                          src={rec.imageUrl}
-                          alt={rec.crop}
-                          className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
-                        />
+                        <div className="relative w-16 h-16 flex-shrink-0">
+                          <Image
+                            src={rec.imageUrl}
+                            alt={rec.crop}
+                            fill
+                            className="rounded-xl object-cover"
+                            sizes="64px"
+                          />
+                        </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span

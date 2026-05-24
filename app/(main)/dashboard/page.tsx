@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Filter,
-  ChevronRight,
   AlertTriangle,
   CheckCircle,
   Info,
@@ -12,159 +11,11 @@ import {
   ChevronDown,
   X,
 } from "lucide-react";
-import {
-  DIAGNOSIS_RECORDS,
-  DiagnosisRecord,
-  getSeverityColor,
-  Severity,
-} from "@/lib/data/mockData";
+import { DIAGNOSIS_RECORDS, getSeverityColor } from "@/lib/data/mockData";
+import { DiagnosisCard } from "@/components/dashboard/DiagnosisCard";
 
 type FilterSeverity = "전체" | "심각" | "보통" | "경미";
 type FilterCrop = "전체" | "고추" | "토마토" | "딸기" | "오이";
-
-function SeverityBadge({ severity }: { severity: Severity }) {
-  const colors = getSeverityColor(severity);
-  return (
-    <span
-      className="px-2 py-0.5 rounded-full"
-      style={{
-        backgroundColor: colors.bg,
-        color: colors.text,
-        fontSize: "11px",
-        fontWeight: 700,
-      }}
-    >
-      {severity}
-    </span>
-  );
-}
-
-function ConfidenceBar({ value }: { value: number }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div
-        className="flex-1 h-1.5 rounded-full"
-        style={{ backgroundColor: "#F0F0F0" }}
-      >
-        <div
-          className="h-full rounded-full"
-          style={{
-            width: `${value}%`,
-            backgroundColor:
-              value >= 85 ? "#F44336" : value >= 70 ? "#FFC107" : "#4CAF50",
-          }}
-        />
-      </div>
-      <span
-        style={{
-          fontSize: "12px",
-          fontWeight: 700,
-          color: "#333",
-          minWidth: "32px",
-          textAlign: "right",
-        }}
-      >
-        {value}%
-      </span>
-    </div>
-  );
-}
-
-function DiagnosisCard({
-  record,
-  selected,
-  onSelect,
-}: {
-  record: DiagnosisRecord;
-  selected: boolean;
-  onSelect: () => void;
-}) {
-  const topResult = record.results[0];
-  const colors = getSeverityColor(record.primarySeverity);
-  const dateFormatted = new Date(record.date).toLocaleDateString("ko-KR", {
-    month: "long",
-    day: "numeric",
-  });
-
-  return (
-    <div
-      className="rounded-2xl overflow-hidden shadow-sm"
-      style={{
-        backgroundColor: "white",
-        border: `1.5px solid ${selected ? "#2D7A3E" : "#F0F0F0"}`,
-      }}
-    >
-      <button className="w-full text-left" onClick={onSelect}>
-        <div className="flex gap-3 p-4">
-          <div
-            className="relative flex-shrink-0"
-            style={{ width: "80px", height: "80px" }}
-          >
-            <img
-              src={record.imageUrl}
-              alt={record.crop}
-              className="w-full h-full object-cover rounded-xl"
-            />
-            <div
-              className="absolute"
-              style={{
-                left: `${topResult.lesionArea.x * 0.8}%`,
-                top: `${topResult.lesionArea.y * 0.8}%`,
-                width: `${topResult.lesionArea.w}%`,
-                height: `${topResult.lesionArea.h}%`,
-                border: `2px solid ${colors.dot}`,
-                borderRadius: "3px",
-              }}
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span style={{ fontSize: "11px", color: "#9E9E9E" }}>
-                {dateFormatted}
-              </span>
-              <span
-                className="px-2 py-0.5 rounded-full"
-                style={{
-                  backgroundColor: "#E8F5E9",
-                  color: "#2D7A3E",
-                  fontSize: "10px",
-                  fontWeight: 600,
-                }}
-              >
-                {record.crop}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span
-                style={{ fontSize: "17px", fontWeight: 800, color: "#1a1a1a" }}
-              >
-                {topResult.diseaseKr}
-              </span>
-              <SeverityBadge severity={record.primarySeverity} />
-            </div>
-            <ConfidenceBar value={topResult.confidence} />
-            <p
-              className="mt-1.5 overflow-hidden"
-              style={{
-                fontSize: "12px",
-                color: "#757575",
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical" as const,
-              }}
-            >
-              {topResult.description}
-            </p>
-          </div>
-          <ChevronRight
-            size={16}
-            style={{ color: "#BDBDBD", flexShrink: 0, alignSelf: "center" }}
-          />
-        </div>
-      </button>
-    </div>
-  );
-}
 
 export default function DashboardPage() {
   const router = useRouter();

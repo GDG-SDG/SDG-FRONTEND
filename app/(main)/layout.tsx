@@ -12,7 +12,7 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const NAV_ITEMS = [
   { path: "/dashboard", icon: LayoutDashboard },
@@ -21,6 +21,89 @@ const NAV_ITEMS = [
   { path: "/chat", icon: MessageSquare },
   { path: "/mypage", icon: User },
 ];
+
+function StatusBar({ time, isOnline }: { time: string; isOnline: boolean }) {
+  return (
+    <div
+      className="flex items-center justify-between px-6 py-2.5 flex-shrink-0 text-[11px] font-semibold text-white"
+      style={{
+        background: "linear-gradient(135deg, #144f28 0%, #1e6b35 100%)",
+      }}
+    >
+      <span>{time}</span>
+      <div className="flex items-center gap-1">
+        {isOnline ? (
+          <Wifi size={12} />
+        ) : (
+          <WifiOff size={12} className="text-red-300" />
+        )}
+        <span>4G</span>
+        <span>🔋</span>
+      </div>
+    </div>
+  );
+}
+
+function AppBar({ isOnline }: { isOnline: boolean }) {
+  return (
+    <div
+      className="flex items-center justify-between px-5 py-4 flex-shrink-0"
+      style={{
+        background:
+          "linear-gradient(160deg, #155729 0%, #2D7A3E 65%, #3a9150 100%)",
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className="w-10 h-10 rounded-2xl flex items-center justify-center"
+          style={{
+            background: "rgba(255,255,255,0.18)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            border: "1px solid rgba(255,255,255,0.3)",
+          }}
+        >
+          <Leaf size={20} className="text-white" />
+        </div>
+        <div>
+          <div className="text-white text-lg font-extrabold leading-tight tracking-tight">
+            팜케어 AI
+          </div>
+          <div
+            className="text-[11px]"
+            style={{ color: "rgba(255,255,255,0.68)" }}
+          >
+            작물 질병 진단 서비스
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+        style={{
+          background: "rgba(255,255,255,0.15)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          border: "1px solid rgba(255,255,255,0.2)",
+        }}
+      >
+        <div
+          className="w-1.5 h-1.5 rounded-full"
+          style={{
+            backgroundColor: isOnline ? "#4ade80" : "#f87171",
+            boxShadow: isOnline ? "0 0 5px #4ade80" : "0 0 5px #f87171",
+          }}
+        />
+        <span
+          className="text-[10px] font-semibold"
+          style={{ color: "rgba(255,255,255,0.9)" }}
+        >
+          {isOnline ? "온라인" : "오프라인"}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default function MainLayout({
   children,
@@ -60,7 +143,7 @@ export default function MainLayout({
     };
   }, []);
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = useCallback((path: string) => pathname === path, [pathname]);
 
   return (
     <div
@@ -80,100 +163,8 @@ export default function MainLayout({
           border: "3px solid #1a1a1a",
         }}
       >
-        {/* Status bar */}
-        <div
-          className="flex items-center justify-between px-6 py-2.5 flex-shrink-0"
-          style={{
-            background: "linear-gradient(135deg, #144f28 0%, #1e6b35 100%)",
-            color: "white",
-            fontSize: "11px",
-            fontWeight: 600,
-          }}
-        >
-          <span>{time}</span>
-          <div className="flex items-center gap-1">
-            {isOnline ? (
-              <Wifi size={12} />
-            ) : (
-              <WifiOff size={12} style={{ color: "#fca5a5" }} />
-            )}
-            <span>4G</span>
-            <span>🔋</span>
-          </div>
-        </div>
-
-        {/* App bar */}
-        <div
-          className="flex items-center justify-between px-5 py-4 flex-shrink-0"
-          style={{
-            background:
-              "linear-gradient(160deg, #155729 0%, #2D7A3E 65%, #3a9150 100%)",
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-2xl flex items-center justify-center"
-              style={{
-                background: "rgba(255,255,255,0.18)",
-                backdropFilter: "blur(10px)",
-                WebkitBackdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.3)",
-              }}
-            >
-              <Leaf size={20} style={{ color: "white" }} />
-            </div>
-            <div>
-              <div
-                style={{
-                  color: "white",
-                  fontSize: "18px",
-                  fontWeight: 800,
-                  lineHeight: 1.2,
-                  letterSpacing: "-0.3px",
-                }}
-              >
-                팜케어 AI
-              </div>
-              <div
-                style={{
-                  color: "rgba(255,255,255,0.68)",
-                  fontSize: "11px",
-                  letterSpacing: "0.1px",
-                }}
-              >
-                작물 질병 진단 서비스
-              </div>
-            </div>
-          </div>
-
-          {/* Online status pill */}
-          <div
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-            style={{
-              background: "rgba(255,255,255,0.15)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
-              border: "1px solid rgba(255,255,255,0.2)",
-            }}
-          >
-            <div
-              className="w-1.5 h-1.5 rounded-full"
-              style={{
-                backgroundColor: isOnline ? "#4ade80" : "#f87171",
-                boxShadow: isOnline ? "0 0 5px #4ade80" : "0 0 5px #f87171",
-              }}
-            />
-            <span
-              style={{
-                color: "rgba(255,255,255,0.9)",
-                fontSize: "10px",
-                fontWeight: 600,
-              }}
-            >
-              {isOnline ? "온라인" : "오프라인"}
-            </span>
-          </div>
-        </div>
+        <StatusBar time={time} isOnline={isOnline} />
+        <AppBar isOnline={isOnline} />
 
         {/* Main content */}
         <div
@@ -218,7 +209,6 @@ export default function MainLayout({
                     WebkitTapHighlightColor: "transparent",
                   }}
                 >
-                  {/* layoutId pill — slides across all items via spring */}
                   {active && (
                     <motion.div
                       layoutId="nav-pill"
@@ -250,7 +240,6 @@ export default function MainLayout({
                     />
                   )}
 
-                  {/* Icon — color animated via motion */}
                   <motion.div
                     className="relative z-10 flex items-center justify-center"
                     animate={{

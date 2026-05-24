@@ -62,7 +62,7 @@
   }
 }
 
-@keyframes spin {
+@keyframes spin-fast {
   to {
     transform: rotate(360deg);
   }
@@ -84,7 +84,7 @@
 }
 
 .spin-anim {
-  animation: spin 0.8s linear infinite;
+  animation: spin-fast 0.8s linear infinite;
 }
 
 .bounce-dot {
