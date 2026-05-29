@@ -95,10 +95,7 @@ export default function DiagnosisPage() {
   };
 
   return (
-    <div
-      className="flex flex-col h-full"
-      style={{ backgroundColor: "#F5F5F5" }}
-    >
+    <div className="flex flex-col h-full">
       {!isOnline && (
         <div
           className="flex items-center justify-center gap-2 py-2 px-4"
@@ -116,17 +113,21 @@ export default function DiagnosisPage() {
       {/* Crop selector */}
       <div className="px-5 pt-3 pb-2 relative z-20">
         <div className="flex items-center gap-2">
-          <span style={{ fontSize: "13px", color: "#757575", fontWeight: 500 }}>
+          <span
+            style={{
+              fontSize: "13px",
+              color: "rgba(20,60,35,0.7)",
+              fontWeight: 500,
+            }}
+          >
             작물 선택
           </span>
           <button
             onClick={() => setShowCropDropdown(!showCropDropdown)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-sm"
+            className="glass-pill-green flex items-center gap-1.5 px-3 py-1.5 rounded-full"
             style={{
-              backgroundColor: "white",
-              border: "1.5px solid #2D7A3E",
               fontSize: "14px",
-              fontWeight: 600,
+              fontWeight: 700,
               color: "#2D7A3E",
             }}
           >
@@ -136,14 +137,14 @@ export default function DiagnosisPage() {
           <div className="ml-auto flex items-center gap-3">
             <div
               className="flex items-center gap-1"
-              style={{ fontSize: "11px", color: "#9E9E9E" }}
+              style={{ fontSize: "11px", color: "rgba(20,60,35,0.6)" }}
             >
               <MapPin size={11} />
               <span>이천시</span>
             </div>
             <div
               className="flex items-center gap-1"
-              style={{ fontSize: "11px", color: "#9E9E9E" }}
+              style={{ fontSize: "11px", color: "rgba(20,60,35,0.6)" }}
             >
               <Clock size={11} />
               <span>{timeStr}</span>
@@ -152,12 +153,8 @@ export default function DiagnosisPage() {
         </div>
         {showCropDropdown && (
           <div
-            className="absolute top-12 left-5 rounded-xl shadow-xl overflow-hidden z-30"
-            style={{
-              backgroundColor: "white",
-              border: "1px solid #E0E0E0",
-              width: "200px",
-            }}
+            className="glass-card-strong absolute top-12 left-5 rounded-xl overflow-hidden z-30"
+            style={{ width: "200px" }}
           >
             {CROP_LIST.map((crop) => (
               <button
@@ -166,10 +163,12 @@ export default function DiagnosisPage() {
                   setSelectedCrop(crop);
                   setShowCropDropdown(false);
                 }}
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-green-50 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 transition-colors"
                 style={{
                   fontSize: "14px",
-                  color: crop === selectedCrop ? "#2D7A3E" : "#333",
+                  color:
+                    crop === selectedCrop ? "#2D7A3E" : "rgba(20,60,35,0.8)",
+                  borderBottom: "1px solid rgba(45,122,62,0.1)",
                 }}
               >
                 {crop}
@@ -416,9 +415,8 @@ export default function DiagnosisPage() {
       {/* Quick result summary */}
       {stage === "complete" && (
         <div
-          className="mx-5 mt-3 rounded-2xl overflow-hidden shadow-md flex flex-col"
+          className="glass-card-strong mx-5 mt-3 rounded-2xl overflow-hidden flex flex-col"
           style={{
-            backgroundColor: "white",
             border: "1.5px solid #F44336",
             maxHeight: "320px",
           }}
@@ -576,14 +574,8 @@ export default function DiagnosisPage() {
         {stage === "ready" ? (
           <>
             <div className="flex items-center justify-between">
-              <button
-                className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm"
-                style={{
-                  backgroundColor: "white",
-                  border: "1.5px solid #E0E0E0",
-                }}
-              >
-                <Image size={22} style={{ color: "#616161" }} />
+              <button className="glass-pill w-12 h-12 rounded-2xl flex items-center justify-center">
+                <Image size={22} style={{ color: "rgba(20,60,35,0.7)" }} />
               </button>
               <button
                 onClick={handleCapture}
@@ -602,7 +594,7 @@ export default function DiagnosisPage() {
             </div>
             <p
               className="text-center"
-              style={{ fontSize: "12px", color: "#9E9E9E" }}
+              style={{ fontSize: "12px", color: "rgba(20,60,35,0.55)" }}
             >
               버튼을 눌러 촬영하거나 갤러리에서 사진을 선택하세요
             </p>
@@ -611,11 +603,9 @@ export default function DiagnosisPage() {
           <div className="flex gap-2">
             <button
               onClick={reset}
-              className="flex items-center justify-center gap-1 px-4 py-3 rounded-xl"
+              className="glass-pill flex items-center justify-center gap-1 px-4 py-3 rounded-xl"
               style={{
-                backgroundColor: "white",
-                border: "1.5px solid #E0E0E0",
-                color: "#616161",
+                color: "rgba(20,60,35,0.85)",
                 fontSize: "14px",
                 fontWeight: 600,
               }}
@@ -637,11 +627,8 @@ export default function DiagnosisPage() {
             </button>
           </div>
         ) : (
-          <div
-            className="flex items-center justify-center py-3 rounded-xl"
-            style={{ backgroundColor: "white", border: "1.5px solid #E0E0E0" }}
-          >
-            <p style={{ fontSize: "13px", color: "#9E9E9E" }}>
+          <div className="glass-pill flex items-center justify-center py-3 rounded-xl">
+            <p style={{ fontSize: "13px", color: "rgba(20,60,35,0.7)" }}>
               {stage === "captured"
                 ? "사진 업로드 중..."
                 : stage === "analyzing"

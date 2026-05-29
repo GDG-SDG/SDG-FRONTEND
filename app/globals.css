@@ -94,3 +94,58 @@
 .chat-input:focus {
   border-color: #2d7a3e !important;
 }
+
+/* Liquid Glass tokens */
+.glass-card {
+  background: rgba(180, 215, 190, 0.22);
+  backdrop-filter: blur(48px) saturate(200%);
+  -webkit-backdrop-filter: blur(48px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.08),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+}
+
+.glass-card-strong {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 10px 32px rgba(0, 0, 0, 0.06),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.9);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.glass-pill-green {
+  background: rgba(200, 230, 201, 0.55);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(165, 214, 167, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 2px 8px rgba(45, 122, 62, 0.06);
+}
+
+.glass-pill-dark {
+  background: rgba(35, 105, 55, 0.68);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 6px 20px rgba(30, 90, 50, 0.45),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.page-bg {
+  background: linear-gradient(160deg, #ffffff 0%, #f5f8f6 60%, #ecf1ee 100%);
+}

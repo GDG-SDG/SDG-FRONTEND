@@ -33,24 +33,23 @@ export default function DashboardPage() {
   });
 
   return (
-    <div
-      className="flex flex-col h-full overflow-y-auto relative"
-      style={{ backgroundColor: "#F5F5F5" }}
-    >
+    <div className="flex flex-col h-full overflow-y-auto relative">
       {/* Header */}
-      <div
-        className="px-5 pt-4 pb-3 flex-shrink-0 sticky top-0 z-20"
-        style={{ backgroundColor: "#F5F5F5" }}
-      >
+      <div className="px-5 pt-4 pb-3 flex-shrink-0 sticky top-0 z-20">
         <div className="flex items-center justify-between mb-3">
-          <h1 style={{ fontSize: "18px", fontWeight: 700, color: "#1a1a1a" }}>
+          <h1
+            style={{
+              fontSize: "18px",
+              fontWeight: 700,
+              color: "rgba(20,60,35,0.95)",
+            }}
+          >
             기록
           </h1>
           <button
             onClick={() => router.push("/calendar")}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
+            className="glass-pill flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
             style={{
-              backgroundColor: "#E8F5E9",
               fontSize: "12px",
               fontWeight: 600,
               color: "#2D7A3E",
@@ -63,7 +62,7 @@ export default function DashboardPage() {
 
         <div className="flex gap-2 relative">
           <div className="flex items-center gap-1 flex-shrink-0">
-            <Filter size={12} style={{ color: "#9E9E9E" }} />
+            <Filter size={12} style={{ color: "rgba(20,60,35,0.55)" }} />
           </div>
 
           {/* Severity filter */}
@@ -73,26 +72,18 @@ export default function DashboardPage() {
                 setShowSeverityDropdown(!showSeverityDropdown);
                 setShowCropDropdown(false);
               }}
-              className="w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl"
+              className="glass-pill w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl"
               style={{
                 fontSize: "12px",
                 fontWeight: 600,
-                backgroundColor: "white",
-                color: "#616161",
-                border: "1.5px solid #E0E0E0",
+                color: "rgba(20,60,35,0.85)",
               }}
             >
               <span>심각도: {filterSeverity}</span>
               <ChevronDown size={14} />
             </button>
             {showSeverityDropdown && (
-              <div
-                className="absolute top-full left-0 right-0 mt-1 rounded-xl shadow-xl overflow-hidden z-10"
-                style={{
-                  backgroundColor: "white",
-                  border: "1px solid #E0E0E0",
-                }}
-              >
+              <div className="glass-card-strong absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden z-10">
                 {(["전체", "심각", "보통", "경미"] as FilterSeverity[]).map(
                   (s) => (
                     <button
@@ -101,12 +92,15 @@ export default function DashboardPage() {
                         setFilterSeverity(s);
                         setShowSeverityDropdown(false);
                       }}
-                      className="w-full px-3 py-2 text-left hover:bg-green-50 transition-colors"
+                      className="w-full px-3 py-2 text-left transition-colors"
                       style={{
                         fontSize: "12px",
                         fontWeight: filterSeverity === s ? 700 : 400,
-                        color: filterSeverity === s ? "#2D7A3E" : "#616161",
-                        borderBottom: "1px solid #F5F5F5",
+                        color:
+                          filterSeverity === s
+                            ? "#2D7A3E"
+                            : "rgba(20,60,35,0.7)",
+                        borderBottom: "1px solid rgba(45,122,62,0.1)",
                       }}
                     >
                       {s}
@@ -124,26 +118,18 @@ export default function DashboardPage() {
                 setShowCropDropdown(!showCropDropdown);
                 setShowSeverityDropdown(false);
               }}
-              className="w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl"
+              className="glass-pill w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl"
               style={{
                 fontSize: "12px",
                 fontWeight: 600,
-                backgroundColor: "white",
-                color: "#616161",
-                border: "1.5px solid #E0E0E0",
+                color: "rgba(20,60,35,0.85)",
               }}
             >
               <span>작물: {filterCrop}</span>
               <ChevronDown size={14} />
             </button>
             {showCropDropdown && (
-              <div
-                className="absolute top-full left-0 right-0 mt-1 rounded-xl shadow-xl overflow-hidden z-10"
-                style={{
-                  backgroundColor: "white",
-                  border: "1px solid #E0E0E0",
-                }}
-              >
+              <div className="glass-card-strong absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden z-10">
                 {(
                   ["전체", "고추", "토마토", "딸기", "오이"] as FilterCrop[]
                 ).map((c) => (
@@ -153,12 +139,13 @@ export default function DashboardPage() {
                       setFilterCrop(c);
                       setShowCropDropdown(false);
                     }}
-                    className="w-full px-3 py-2 text-left hover:bg-orange-50 transition-colors"
+                    className="w-full px-3 py-2 text-left transition-colors"
                     style={{
                       fontSize: "12px",
                       fontWeight: filterCrop === c ? 700 : 400,
-                      color: filterCrop === c ? "#FF6B35" : "#616161",
-                      borderBottom: "1px solid #F5F5F5",
+                      color:
+                        filterCrop === c ? "#FF6B35" : "rgba(20,60,35,0.7)",
+                      borderBottom: "1px solid rgba(255,255,255,0.4)",
                     }}
                   >
                     {c}
@@ -211,9 +198,8 @@ export default function DashboardPage() {
               onClick={() => setSelectedId(null)}
             >
               <div
-                className="w-full rounded-2xl overflow-hidden shadow-xl flex flex-col"
+                className="glass-card-strong w-full rounded-2xl overflow-hidden flex flex-col"
                 style={{
-                  backgroundColor: "white",
                   maxHeight: "75vh",
                   maxWidth: "350px",
                 }}

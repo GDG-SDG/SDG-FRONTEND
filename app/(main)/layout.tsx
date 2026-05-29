@@ -25,17 +25,15 @@ const NAV_ITEMS = [
 function StatusBar({ time, isOnline }: { time: string; isOnline: boolean }) {
   return (
     <div
-      className="flex items-center justify-between px-6 py-2.5 flex-shrink-0 text-[11px] font-semibold text-white"
-      style={{
-        background: "linear-gradient(135deg, #144f28 0%, #1e6b35 100%)",
-      }}
+      className="glass-pill flex items-center justify-between px-6 py-2.5 flex-shrink-0 text-[11px] font-semibold"
+      style={{ color: "rgba(20,60,35,0.9)", borderRadius: 0 }}
     >
       <span>{time}</span>
       <div className="flex items-center gap-1">
         {isOnline ? (
           <Wifi size={12} />
         ) : (
-          <WifiOff size={12} className="text-red-300" />
+          <WifiOff size={12} style={{ color: "#ef4444" }} />
         )}
         <span>4G</span>
         <span>🔋</span>
@@ -46,60 +44,46 @@ function StatusBar({ time, isOnline }: { time: string; isOnline: boolean }) {
 
 function AppBar({ isOnline }: { isOnline: boolean }) {
   return (
-    <div
-      className="flex items-center justify-between px-5 py-4 flex-shrink-0"
-      style={{
-        background:
-          "linear-gradient(160deg, #155729 0%, #2D7A3E 65%, #3a9150 100%)",
-      }}
-    >
-      <div className="flex items-center gap-3">
-        <div
-          className="w-10 h-10 rounded-2xl flex items-center justify-center"
-          style={{
-            background: "rgba(255,255,255,0.18)",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-            border: "1px solid rgba(255,255,255,0.3)",
-          }}
-        >
-          <Leaf size={20} className="text-white" />
-        </div>
-        <div>
-          <div className="text-white text-lg font-extrabold leading-tight tracking-tight">
-            팜케어 AI
-          </div>
-          <div
-            className="text-[11px]"
-            style={{ color: "rgba(255,255,255,0.68)" }}
-          >
-            작물 질병 진단 서비스
-          </div>
-        </div>
-      </div>
-
+    <div className="flex-shrink-0 px-4 pt-3 pb-2">
       <div
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-        style={{
-          background: "rgba(255,255,255,0.15)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          border: "1px solid rgba(255,255,255,0.2)",
-        }}
+        className="glass-card flex items-center justify-between"
+        style={{ borderRadius: "28px", padding: "12px 14px" }}
       >
-        <div
-          className="w-1.5 h-1.5 rounded-full"
-          style={{
-            backgroundColor: isOnline ? "#4ade80" : "#f87171",
-            boxShadow: isOnline ? "0 0 5px #4ade80" : "0 0 5px #f87171",
-          }}
-        />
-        <span
-          className="text-[10px] font-semibold"
-          style={{ color: "rgba(255,255,255,0.9)" }}
-        >
-          {isOnline ? "온라인" : "오프라인"}
-        </span>
+        <div className="flex items-center gap-3">
+          <div className="glass-pill-dark w-10 h-10 rounded-2xl flex items-center justify-center">
+            <Leaf size={20} className="text-white" />
+          </div>
+          <div>
+            <div
+              className="text-lg font-extrabold leading-tight tracking-tight"
+              style={{ color: "rgba(20,60,35,0.95)" }}
+            >
+              팜케어 AI
+            </div>
+            <div
+              className="text-[11px] font-medium"
+              style={{ color: "rgba(20,60,35,0.6)" }}
+            >
+              작물 질병 진단 서비스
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-pill flex items-center gap-1.5 px-3 py-1.5 rounded-full">
+          <div
+            className="w-1.5 h-1.5 rounded-full"
+            style={{
+              backgroundColor: isOnline ? "#22c55e" : "#ef4444",
+              boxShadow: isOnline ? "0 0 5px #22c55e" : "0 0 5px #ef4444",
+            }}
+          />
+          <span
+            className="text-[10px] font-semibold"
+            style={{ color: "rgba(20,60,35,0.85)" }}
+          >
+            {isOnline ? "온라인" : "오프라인"}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -154,12 +138,11 @@ export default function MainLayout({
       }}
     >
       <div
-        className="relative flex flex-col overflow-hidden shadow-2xl"
+        className="page-bg relative flex flex-col overflow-hidden shadow-2xl"
         style={{
           width: "390px",
           height: "844px",
           borderRadius: "44px",
-          backgroundColor: "#EFF4F0",
           border: "3px solid #1a1a1a",
         }}
       >
@@ -170,9 +153,8 @@ export default function MainLayout({
         <div
           className="flex-1 overflow-y-auto"
           style={{
-            backgroundColor: "#EFF4F0",
             scrollbarWidth: "thin",
-            scrollbarColor: "#BDBDBD #EFF4F0",
+            scrollbarColor: "rgba(45,122,62,0.4) transparent",
           }}
         >
           {children}
@@ -181,20 +163,8 @@ export default function MainLayout({
         {/* Liquid glass bottom nav — layoutId sliding pill */}
         <div className="flex-shrink-0 px-4 pb-4 pt-2">
           <div
-            className="flex items-center justify-between"
-            style={{
-              background: "rgba(180, 215, 190, 0.18)",
-              backdropFilter: "blur(48px) saturate(200%)",
-              WebkitBackdropFilter: "blur(48px) saturate(200%)",
-              borderRadius: "36px",
-              border: "1px solid rgba(255,255,255,0.38)",
-              boxShadow: [
-                "0 12px 40px rgba(0,0,0,0.08)",
-                "inset 0 1.5px 0 rgba(255,255,255,0.8)",
-                "inset 0 -1px 0 rgba(0,0,0,0.03)",
-              ].join(", "),
-              padding: "10px 14px",
-            }}
+            className="glass-card flex items-center justify-between"
+            style={{ borderRadius: "36px", padding: "10px 14px" }}
           >
             {NAV_ITEMS.map(({ path, icon: Icon, isCamera }) => {
               const active = isActive(path);

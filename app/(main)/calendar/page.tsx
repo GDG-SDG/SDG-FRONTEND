@@ -100,17 +100,11 @@ export default function CalendarPage() {
   const formatMonthKr = () => `${year}년 ${month + 1}월`;
 
   return (
-    <div
-      className="flex flex-col h-full overflow-y-auto pb-4"
-      style={{ backgroundColor: "#F5F5F5" }}
-    >
+    <div className="flex flex-col h-full overflow-y-auto pb-4">
       {/* Weather info */}
       {selectedWeather && (
         <div className="mx-4 mt-3 mb-3">
-          <div
-            className="rounded-xl p-3 flex items-center gap-4"
-            style={{ backgroundColor: "#E3F2FD", border: "1px solid #BBDEFB" }}
-          >
+          <div className="glass-card-strong rounded-xl p-3 flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <Thermometer size={14} style={{ color: "#1565C0" }} />
               <span
@@ -153,14 +147,16 @@ export default function CalendarPage() {
       )}
 
       {/* Calendar */}
-      <div
-        className="mx-4 rounded-2xl overflow-hidden shadow-sm"
-        style={{ backgroundColor: "white" }}
-      >
+      <div className="glass-card-strong mx-4 rounded-2xl overflow-hidden">
         {/* Month nav */}
         <div
           className="flex items-center justify-between px-4 py-3"
-          style={{ backgroundColor: "#2D7A3E" }}
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(35,105,55,0.85) 0%, rgba(45,122,62,0.85) 100%)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+          }}
         >
           <button
             onClick={prevMonth}
@@ -304,13 +300,16 @@ export default function CalendarPage() {
 
       {/* Stats / Selected date detail */}
       <div className="mx-4 mt-3 mb-4">
-        <div
-          className="rounded-2xl overflow-hidden shadow-sm"
-          style={{ backgroundColor: "white" }}
-        >
+        <div className="glass-card-strong rounded-2xl overflow-hidden">
           {selectedDate ? (
             <>
-              <div className="px-4 py-3" style={{ backgroundColor: "#F5F5F5" }}>
+              <div
+                className="px-4 py-3"
+                style={{
+                  background: "rgba(232, 245, 233, 0.6)",
+                  borderBottom: "1px solid rgba(45,122,62,0.12)",
+                }}
+              >
                 <h3
                   style={{
                     fontSize: "14px",
@@ -411,7 +410,13 @@ export default function CalendarPage() {
             </>
           ) : (
             <>
-              <div className="px-4 py-3" style={{ backgroundColor: "#F5F5F5" }}>
+              <div
+                className="px-4 py-3"
+                style={{
+                  background: "rgba(232, 245, 233, 0.6)",
+                  borderBottom: "1px solid rgba(45,122,62,0.12)",
+                }}
+              >
                 <h3
                   style={{
                     fontSize: "14px",
