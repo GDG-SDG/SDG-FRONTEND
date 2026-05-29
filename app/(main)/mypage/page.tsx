@@ -67,7 +67,7 @@ export default function MyPage() {
           className="px-5 py-6 flex items-center gap-4"
           style={{
             background: "rgba(232, 245, 233, 0.6)",
-            borderBottom: "1px solid rgba(45,122,62,0.12)",
+            borderBottom: "1px solid rgb(var(--glass-accent) / 0.12)",
           }}
         >
           <div
@@ -84,7 +84,10 @@ export default function MyPage() {
                 {userInfo.name}
               </h1>
               <button className="glass-pill w-7 h-7 rounded-full flex items-center justify-center">
-                <Edit size={14} style={{ color: "rgba(20,60,35,0.75)" }} />
+                <Edit
+                  size={14}
+                  style={{ color: "rgb(var(--glass-text) / 0.75)" }}
+                />
               </button>
             </div>
             <p style={{ fontSize: "13px", color: "#757575" }}>
@@ -157,9 +160,10 @@ export default function MyPage() {
           {menuItems.map((item, idx) => (
             <button
               key={item.label}
-              className="w-full flex items-center gap-3 px-5 py-4 transition-all"
+              className="glass-row w-full flex items-center gap-3 px-5 py-4"
               style={{
-                borderTop: idx > 0 ? "1px solid rgba(45,122,62,0.1)" : "none",
+                borderTop:
+                  idx > 0 ? "1px solid rgb(var(--glass-accent) / 0.1)" : "none",
               }}
             >
               <div

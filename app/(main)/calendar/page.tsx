@@ -307,7 +307,7 @@ export default function CalendarPage() {
                 className="px-4 py-3"
                 style={{
                   background: "rgba(232, 245, 233, 0.6)",
-                  borderBottom: "1px solid rgba(45,122,62,0.12)",
+                  borderBottom: "1px solid rgb(var(--glass-accent) / 0.12)",
                 }}
               >
                 <h3
@@ -414,7 +414,7 @@ export default function CalendarPage() {
                 className="px-4 py-3"
                 style={{
                   background: "rgba(232, 245, 233, 0.6)",
-                  borderBottom: "1px solid rgba(45,122,62,0.12)",
+                  borderBottom: "1px solid rgb(var(--glass-accent) / 0.12)",
                 }}
               >
                 <h3

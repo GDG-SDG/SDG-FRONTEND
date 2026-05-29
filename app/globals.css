@@ -95,6 +95,12 @@
   border-color: #2d7a3e !important;
 }
 
+/* Liquid Glass color tokens — use as rgb(var(--glass-text) / <alpha>) */
+:root {
+  --glass-text: 20 60 35;
+  --glass-accent: 45 122 62;
+}
+
 /* Liquid Glass tokens */
 .glass-card {
   background: rgba(180, 215, 190, 0.22);
@@ -148,4 +154,30 @@
 
 .page-bg {
   background: linear-gradient(160deg, #ffffff 0%, #f5f8f6 60%, #ecf1ee 100%);
+}
+
+/* No-radius variants for sticky bars where rounded edges would not align */
+.glass-bar {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
+.glass-bar-top {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border-top: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Subtle hover surface that reads well on top of any glass layer */
+.glass-row {
+  transition: background-color 120ms ease;
+}
+.glass-row:hover {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+.glass-row:active {
+  background-color: rgba(255, 255, 255, 0.55);
 }

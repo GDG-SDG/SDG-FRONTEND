@@ -25,8 +25,8 @@ const NAV_ITEMS = [
 function StatusBar({ time, isOnline }: { time: string; isOnline: boolean }) {
   return (
     <div
-      className="glass-pill flex items-center justify-between px-6 py-2.5 flex-shrink-0 text-[11px] font-semibold"
-      style={{ color: "rgba(20,60,35,0.9)", borderRadius: 0 }}
+      className="glass-bar flex items-center justify-between px-6 py-2.5 flex-shrink-0 text-[11px] font-semibold"
+      style={{ color: "rgb(var(--glass-text) / 0.9)" }}
     >
       <span>{time}</span>
       <div className="flex items-center gap-1">
@@ -56,13 +56,13 @@ function AppBar({ isOnline }: { isOnline: boolean }) {
           <div>
             <div
               className="text-lg font-extrabold leading-tight tracking-tight"
-              style={{ color: "rgba(20,60,35,0.95)" }}
+              style={{ color: "rgb(var(--glass-text) / 0.95)" }}
             >
               팜케어 AI
             </div>
             <div
               className="text-[11px] font-medium"
-              style={{ color: "rgba(20,60,35,0.6)" }}
+              style={{ color: "rgb(var(--glass-text) / 0.6)" }}
             >
               작물 질병 진단 서비스
             </div>
@@ -79,7 +79,7 @@ function AppBar({ isOnline }: { isOnline: boolean }) {
           />
           <span
             className="text-[10px] font-semibold"
-            style={{ color: "rgba(20,60,35,0.85)" }}
+            style={{ color: "rgb(var(--glass-text) / 0.85)" }}
           >
             {isOnline ? "온라인" : "오프라인"}
           </span>
@@ -154,7 +154,7 @@ export default function MainLayout({
           className="flex-1 overflow-y-auto"
           style={{
             scrollbarWidth: "thin",
-            scrollbarColor: "rgba(45,122,62,0.4) transparent",
+            scrollbarColor: "rgb(var(--glass-accent) / 0.4) transparent",
           }}
         >
           {children}
@@ -216,7 +216,7 @@ export default function MainLayout({
                       color: active
                         ? isCamera
                           ? "rgba(255,255,255,0.93)"
-                          : "rgba(20,60,35,0.9)"
+                          : "rgb(var(--glass-text) / 0.9)"
                         : "rgba(100,130,108,0.7)",
                       scale: active ? 1 : 0.95,
                     }}

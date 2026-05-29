@@ -186,7 +186,7 @@ export default function ChatbotPage() {
                 className="px-3 py-2"
                 style={{
                   background: "rgba(232, 245, 233, 0.6)",
-                  borderBottom: "1px solid rgba(45,122,62,0.12)",
+                  borderBottom: "1px solid rgb(var(--glass-accent) / 0.12)",
                 }}
               >
                 <p
@@ -217,8 +217,10 @@ export default function ChatbotPage() {
                 <button
                   key={session.id}
                   onClick={() => setShowHistoryMenu(false)}
-                  className="w-full px-3 py-2.5 text-left transition-colors"
-                  style={{ borderBottom: "1px solid rgba(45,122,62,0.1)" }}
+                  className="glass-row w-full px-3 py-2.5 text-left"
+                  style={{
+                    borderBottom: "1px solid rgb(var(--glass-accent) / 0.1)",
+                  }}
                 >
                   <p
                     style={{
@@ -334,10 +336,7 @@ export default function ChatbotPage() {
       </div>
 
       {/* Input */}
-      <div
-        className="glass-card-strong px-4 py-3 flex-shrink-0 flex items-center gap-2"
-        style={{ borderRadius: 0, borderLeft: 0, borderRight: 0 }}
-      >
+      <div className="glass-bar-top px-4 py-3 flex-shrink-0 flex items-center gap-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -346,7 +345,7 @@ export default function ChatbotPage() {
           className="glass-pill flex-1 px-4 py-3 rounded-2xl outline-none chat-input"
           style={{
             fontSize: "14px",
-            color: "rgba(20,60,35,0.9)",
+            color: "rgb(var(--glass-text) / 0.9)",
           }}
         />
         <button

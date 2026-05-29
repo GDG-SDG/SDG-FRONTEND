@@ -116,7 +116,7 @@ export default function DiagnosisPage() {
           <span
             style={{
               fontSize: "13px",
-              color: "rgba(20,60,35,0.7)",
+              color: "rgb(var(--glass-text) / 0.7)",
               fontWeight: 500,
             }}
           >
@@ -137,14 +137,20 @@ export default function DiagnosisPage() {
           <div className="ml-auto flex items-center gap-3">
             <div
               className="flex items-center gap-1"
-              style={{ fontSize: "11px", color: "rgba(20,60,35,0.6)" }}
+              style={{
+                fontSize: "11px",
+                color: "rgb(var(--glass-text) / 0.6)",
+              }}
             >
               <MapPin size={11} />
               <span>이천시</span>
             </div>
             <div
               className="flex items-center gap-1"
-              style={{ fontSize: "11px", color: "rgba(20,60,35,0.6)" }}
+              style={{
+                fontSize: "11px",
+                color: "rgb(var(--glass-text) / 0.6)",
+              }}
             >
               <Clock size={11} />
               <span>{timeStr}</span>
@@ -163,12 +169,14 @@ export default function DiagnosisPage() {
                   setSelectedCrop(crop);
                   setShowCropDropdown(false);
                 }}
-                className="w-full flex items-center justify-between px-4 py-3 transition-colors"
+                className="glass-row w-full flex items-center justify-between px-4 py-3"
                 style={{
                   fontSize: "14px",
                   color:
-                    crop === selectedCrop ? "#2D7A3E" : "rgba(20,60,35,0.8)",
-                  borderBottom: "1px solid rgba(45,122,62,0.1)",
+                    crop === selectedCrop
+                      ? "#2D7A3E"
+                      : "rgb(var(--glass-text) / 0.8)",
+                  borderBottom: "1px solid rgb(var(--glass-accent) / 0.1)",
                 }}
               >
                 {crop}
@@ -575,7 +583,10 @@ export default function DiagnosisPage() {
           <>
             <div className="flex items-center justify-between">
               <button className="glass-pill w-12 h-12 rounded-2xl flex items-center justify-center">
-                <Image size={22} style={{ color: "rgba(20,60,35,0.7)" }} />
+                <Image
+                  size={22}
+                  style={{ color: "rgb(var(--glass-text) / 0.7)" }}
+                />
               </button>
               <button
                 onClick={handleCapture}
@@ -594,7 +605,10 @@ export default function DiagnosisPage() {
             </div>
             <p
               className="text-center"
-              style={{ fontSize: "12px", color: "rgba(20,60,35,0.55)" }}
+              style={{
+                fontSize: "12px",
+                color: "rgb(var(--glass-text) / 0.55)",
+              }}
             >
               버튼을 눌러 촬영하거나 갤러리에서 사진을 선택하세요
             </p>
@@ -605,7 +619,7 @@ export default function DiagnosisPage() {
               onClick={reset}
               className="glass-pill flex items-center justify-center gap-1 px-4 py-3 rounded-xl"
               style={{
-                color: "rgba(20,60,35,0.85)",
+                color: "rgb(var(--glass-text) / 0.85)",
                 fontSize: "14px",
                 fontWeight: 600,
               }}
@@ -628,7 +642,12 @@ export default function DiagnosisPage() {
           </div>
         ) : (
           <div className="glass-pill flex items-center justify-center py-3 rounded-xl">
-            <p style={{ fontSize: "13px", color: "rgba(20,60,35,0.7)" }}>
+            <p
+              style={{
+                fontSize: "13px",
+                color: "rgb(var(--glass-text) / 0.7)",
+              }}
+            >
               {stage === "captured"
                 ? "사진 업로드 중..."
                 : stage === "analyzing"

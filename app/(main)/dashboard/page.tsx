@@ -41,7 +41,7 @@ export default function DashboardPage() {
             style={{
               fontSize: "18px",
               fontWeight: 700,
-              color: "rgba(20,60,35,0.95)",
+              color: "rgb(var(--glass-text) / 0.95)",
             }}
           >
             기록
@@ -62,7 +62,10 @@ export default function DashboardPage() {
 
         <div className="flex gap-2 relative">
           <div className="flex items-center gap-1 flex-shrink-0">
-            <Filter size={12} style={{ color: "rgba(20,60,35,0.55)" }} />
+            <Filter
+              size={12}
+              style={{ color: "rgb(var(--glass-text) / 0.55)" }}
+            />
           </div>
 
           {/* Severity filter */}
@@ -76,7 +79,7 @@ export default function DashboardPage() {
               style={{
                 fontSize: "12px",
                 fontWeight: 600,
-                color: "rgba(20,60,35,0.85)",
+                color: "rgb(var(--glass-text) / 0.85)",
               }}
             >
               <span>심각도: {filterSeverity}</span>
@@ -92,15 +95,16 @@ export default function DashboardPage() {
                         setFilterSeverity(s);
                         setShowSeverityDropdown(false);
                       }}
-                      className="w-full px-3 py-2 text-left transition-colors"
+                      className="glass-row w-full px-3 py-2 text-left"
                       style={{
                         fontSize: "12px",
                         fontWeight: filterSeverity === s ? 700 : 400,
                         color:
                           filterSeverity === s
                             ? "#2D7A3E"
-                            : "rgba(20,60,35,0.7)",
-                        borderBottom: "1px solid rgba(45,122,62,0.1)",
+                            : "rgb(var(--glass-text) / 0.7)",
+                        borderBottom:
+                          "1px solid rgb(var(--glass-accent) / 0.1)",
                       }}
                     >
                       {s}
@@ -122,7 +126,7 @@ export default function DashboardPage() {
               style={{
                 fontSize: "12px",
                 fontWeight: 600,
-                color: "rgba(20,60,35,0.85)",
+                color: "rgb(var(--glass-text) / 0.85)",
               }}
             >
               <span>작물: {filterCrop}</span>
@@ -144,8 +148,10 @@ export default function DashboardPage() {
                       fontSize: "12px",
                       fontWeight: filterCrop === c ? 700 : 400,
                       color:
-                        filterCrop === c ? "#FF6B35" : "rgba(20,60,35,0.7)",
-                      borderBottom: "1px solid rgba(255,255,255,0.4)",
+                        filterCrop === c
+                          ? "#FF6B35"
+                          : "rgb(var(--glass-text) / 0.7)",
+                      borderBottom: "1px solid rgb(var(--glass-accent) / 0.1)",
                     }}
                   >
                     {c}
