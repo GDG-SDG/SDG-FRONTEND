@@ -13,7 +13,12 @@ import {
 } from "lucide-react";
 import { getSeverityColor } from "@/lib/data/mockData";
 import { DiagnosisCard } from "@/components/dashboard/DiagnosisCard";
-import { useDiagnoses, useDiagnosisDetail } from "@/lib/queries/useDiagnoses";
+import {
+  useDiagnoses,
+  useDiagnosisDetail,
+  useSimilarCases,
+  useUpdateTreatmentStatus,
+} from "@/lib/queries/useDiagnoses";
 
 type FilterSeverity = "전체" | "심각" | "보통" | "경미";
 type FilterCrop = "전체" | "고추" | "토마토" | "딸기" | "오이";
@@ -28,6 +33,8 @@ export default function DashboardPage() {
 
   const { data, isLoading, isError } = useDiagnoses();
   const { data: detail } = useDiagnosisDetail(selectedId);
+  const { data: similarCases } = useSimilarCases(selectedId);
+  const updateStatus = useUpdateTreatmentStatus();
 
   const filtered = (data?.content ?? []).filter((r) => {
     const sev = filterSeverity === "전체" || r.severity === filterSeverity;
@@ -320,47 +327,36 @@ export default function DashboardPage() {
                       📊 최근 유사 사례
                     </h4>
                     <div className="space-y-2">
-                      {[
-                        {
-                          region: "경기 여주시",
-                          env: "비닐하우스, 습도 85%, 온도 28°C",
-                          severity: "#F44336",
-                        },
-                        {
-                          region: "충남 천안시",
-                          env: "노지 재배, 장마 기간, 습도 90%",
-                          severity: "#F44336",
-                        },
-                        {
-                          region: "경기 용인시",
-                          env: "시설재배, 통풍 불량, 밀식 환경",
-                          severity: "#FFC107",
-                        },
-                        {
-                          region: "강원 홍천군",
-                          env: "노지 재배, 습도 75%, 조기 예방 살포",
-                          severity: "#4CAF50",
-                        },
-                      ].map((item, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <div
-                            className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0"
-                            style={{ backgroundColor: item.severity }}
-                          />
-                          <p
-                            style={{
-                              fontSize: "11px",
-                              color: "#616161",
-                              lineHeight: 1.5,
-                            }}
-                          >
-                            <strong style={{ color: "#333" }}>
-                              {item.region}
-                            </strong>{" "}
-                            · {item.env}
-                          </p>
-                        </div>
-                      ))}
+                      {(similarCases ?? []).length === 0 ? (
+                        <p style={{ fontSize: "11px", color: "#9E9E9E" }}>
+                          유사 사례가 없습니다
+                        </p>
+                      ) : (
+                        (similarCases ?? []).map((item) => (
+                          <div key={item.id} className="flex items-start gap-2">
+                            <div
+                              className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0"
+                              style={{
+                                backgroundColor: getSeverityColor(item.severity)
+                                  .dot,
+                              }}
+                            />
+                            <p
+                              style={{
+                                fontSize: "11px",
+                                color: "#616161",
+                                lineHeight: 1.5,
+                              }}
+                            >
+                              <strong style={{ color: "#333" }}>
+                                {item.location}
+                              </strong>{" "}
+                              · {item.cropName} · 습도 {item.weather.humidity}%
+                              · 온도 {item.weather.temperature}°C
+                            </p>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
 
@@ -440,12 +436,43 @@ export default function DashboardPage() {
                 </div>
 
                 <div
-                  className="px-4 py-3 flex-shrink-0"
+                  className="px-4 py-3 flex-shrink-0 flex flex-col gap-2"
                   style={{
                     backgroundColor: "#FAFAFA",
                     borderTop: "1px solid #F0F0F0",
                   }}
                 >
+                  {(() => {
+                    const isDone = detail.treatmentStatus === "방제 완료";
+                    return (
+                      <button
+                        onClick={() =>
+                          updateStatus.mutate({
+                            id: detail.id,
+                            treatmentStatus: isDone ? "방제 필요" : "방제 완료",
+                          })
+                        }
+                        disabled={updateStatus.isPending}
+                        className="w-full py-3 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
+                        style={{
+                          backgroundColor: isDone ? "#E8F5E9" : "white",
+                          color: "#2D7A3E",
+                          border: "1.5px solid #2D7A3E",
+                          fontSize: "14px",
+                          fontWeight: 700,
+                          opacity: updateStatus.isPending ? 0.6 : 1,
+                        }}
+                      >
+                        {isDone ? (
+                          <>
+                            <CheckCircle size={16} /> 방제 완료됨
+                          </>
+                        ) : (
+                          "방제 완료로 표시"
+                        )}
+                      </button>
+                    );
+                  })()}
                   <button
                     onClick={() => router.push("/chat")}
                     className="w-full py-3 rounded-xl"

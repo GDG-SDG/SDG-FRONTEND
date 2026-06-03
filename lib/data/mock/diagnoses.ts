@@ -1,5 +1,10 @@
 // API 응답 형태(api-spec.md)에 맞춘 진단 mock — USE_MOCK=true 구간에서 사용
-import type { DiagnosisDetail, DiagnosisListItem } from "@/lib/types/diagnosis";
+import type {
+  DiagnosisDetail,
+  DiagnosisListItem,
+  MonthlyStat,
+  SimilarCase,
+} from "@/lib/types/diagnosis";
 
 const PEPPER_IMG =
   "https://images.unsplash.com/photo-1749188693224-2b48722f8d35?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXBwZXIlMjBwbGFudCUyMGRpc2Vhc2UlMjBsZWFmJTIwc3BvdHN8ZW58MXx8fHwxNzc3NTMwMDMyfDA&ixlib=rb-4.1.0&q=80&w=1080";
@@ -346,3 +351,85 @@ export const MOCK_DIAGNOSIS_DETAILS: Record<number, DiagnosisDetail> = {
     ],
   },
 };
+
+/** GET /diagnoses/{id}/similar-cases — 같은 병해의 다른 사용자 진단 기록 */
+export const MOCK_SIMILAR_CASES: SimilarCase[] = [
+  {
+    id: 201,
+    location: "경기 여주시",
+    cropName: "고추",
+    severity: "심각",
+    weather: { temperature: 28, humidity: 85, precipitation: 5 },
+    diagnosedAt: "2026-05-10T14:00:00+09:00",
+  },
+  {
+    id: 202,
+    location: "충남 천안시",
+    cropName: "고추",
+    severity: "심각",
+    weather: { temperature: 25, humidity: 90, precipitation: 15 },
+    diagnosedAt: "2026-05-08T09:30:00+09:00",
+  },
+  {
+    id: 203,
+    location: "경기 용인시",
+    cropName: "고추",
+    severity: "보통",
+    weather: { temperature: 26, humidity: 80, precipitation: 0 },
+    diagnosedAt: "2026-05-05T11:00:00+09:00",
+  },
+  {
+    id: 204,
+    location: "강원 홍천군",
+    cropName: "고추",
+    severity: "경미",
+    weather: { temperature: 22, humidity: 75, precipitation: 2 },
+    diagnosedAt: "2026-05-01T08:00:00+09:00",
+  },
+];
+
+/** GET /diagnoses/stats/monthly — 연간 월별 통계 */
+export const MOCK_MONTHLY_STATS: MonthlyStat[] = [
+  {
+    id: 1,
+    month: 1,
+    totalCount: 3,
+    severeCount: 1,
+    treatmentCompletedCount: 2,
+  },
+  {
+    id: 2,
+    month: 2,
+    totalCount: 2,
+    severeCount: 0,
+    treatmentCompletedCount: 2,
+  },
+  {
+    id: 3,
+    month: 3,
+    totalCount: 4,
+    severeCount: 2,
+    treatmentCompletedCount: 3,
+  },
+  {
+    id: 4,
+    month: 4,
+    totalCount: 5,
+    severeCount: 2,
+    treatmentCompletedCount: 2,
+  },
+  {
+    id: 5,
+    month: 5,
+    totalCount: 6,
+    severeCount: 3,
+    treatmentCompletedCount: 4,
+  },
+  {
+    id: 6,
+    month: 6,
+    totalCount: 2,
+    severeCount: 1,
+    treatmentCompletedCount: 1,
+  },
+];

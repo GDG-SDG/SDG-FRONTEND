@@ -5,10 +5,15 @@ export const queryKeys = {
   diagnoses: (filters?: DiagnosisFilters) =>
     ["diagnoses", "list", filters ?? {}] as const,
   diagnosisDetail: (id: number) => ["diagnoses", "detail", id] as const,
+  similarCases: (id: number) => ["diagnoses", "similar", id] as const,
+  mypage: ["users", "mypage"] as const,
   mypageSummary: ["users", "mypage", "summary"] as const,
   monthlyStats: (year: number) =>
     ["diagnoses", "stats", "monthly", year] as const,
   chatSessions: ["chat", "sessions"] as const,
   chatMessages: (sessionId: string) =>
     ["chat", "sessions", sessionId, "messages"] as const,
+  calendarMonth: (year: number, month: number) =>
+    ["calendar", year, month] as const,
+  calendarByDate: (date: string) => ["calendar", "date", date] as const,
 };
