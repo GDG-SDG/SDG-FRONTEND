@@ -8,9 +8,7 @@ import {
   CalendarDays,
   MessageSquare,
   User,
-  Leaf,
   Wifi,
-  WifiOff,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 
@@ -22,7 +20,7 @@ const NAV_ITEMS = [
   { path: "/mypage", icon: User },
 ];
 
-function StatusBar({ time, isOnline }: { time: string; isOnline: boolean }) {
+function StatusBar({ time }: { time: string }) {
   return (
     <div
       className="glass-bar flex items-center justify-between px-6 py-2.5 flex-shrink-0 text-[11px] font-semibold"
@@ -30,60 +28,9 @@ function StatusBar({ time, isOnline }: { time: string; isOnline: boolean }) {
     >
       <span>{time}</span>
       <div className="flex items-center gap-1">
-        {isOnline ? (
-          <Wifi size={12} />
-        ) : (
-          <WifiOff size={12} style={{ color: "#ef4444" }} />
-        )}
+        <Wifi size={12} />
         <span>4G</span>
         <span>🔋</span>
-      </div>
-    </div>
-  );
-}
-
-function AppBar({ isOnline }: { isOnline: boolean }) {
-  return (
-    <div className="flex-shrink-0 px-4 pt-3 pb-2">
-      <div
-        className="glass-card flex items-center justify-between"
-        style={{ borderRadius: "28px", padding: "12px 14px" }}
-      >
-        <div className="flex items-center gap-3">
-          <div className="glass-pill-dark w-10 h-10 rounded-2xl flex items-center justify-center">
-            <Leaf size={20} className="text-white" />
-          </div>
-          <div>
-            <div
-              className="text-lg font-extrabold leading-tight tracking-tight"
-              style={{ color: "rgb(var(--glass-text) / 0.95)" }}
-            >
-              팜케어 AI
-            </div>
-            <div
-              className="text-[11px] font-medium"
-              style={{ color: "rgb(var(--glass-text) / 0.6)" }}
-            >
-              작물 질병 진단 서비스
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-pill flex items-center gap-1.5 px-3 py-1.5 rounded-full">
-          <div
-            className="w-1.5 h-1.5 rounded-full"
-            style={{
-              backgroundColor: isOnline ? "#22c55e" : "#ef4444",
-              boxShadow: isOnline ? "0 0 5px #22c55e" : "0 0 5px #ef4444",
-            }}
-          />
-          <span
-            className="text-[10px] font-semibold"
-            style={{ color: "rgb(var(--glass-text) / 0.85)" }}
-          >
-            {isOnline ? "온라인" : "오프라인"}
-          </span>
-        </div>
       </div>
     </div>
   );
@@ -96,7 +43,6 @@ export default function MainLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isOnline, setIsOnline] = useState(true);
   const [time, setTime] = useState("");
 
   useEffect(() => {
@@ -113,18 +59,6 @@ export default function MainLayout({
     update();
     const interval = setInterval(update, 60000);
     return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    setIsOnline(navigator.onLine);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
   }, []);
 
   const isActive = useCallback((path: string) => pathname === path, [pathname]);
@@ -146,8 +80,7 @@ export default function MainLayout({
           border: "3px solid #1a1a1a",
         }}
       >
-        <StatusBar time={time} isOnline={isOnline} />
-        <AppBar isOnline={isOnline} />
+        <StatusBar time={time} />
 
         {/* Main content */}
         <div
