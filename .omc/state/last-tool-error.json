@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"Remove-Item \\\"C:\\\\Users\\\\intern\\\\project\\\\agriguard\\\\SDG-FRONTEND\\\\.claude\\\\worktrees\\\\jovial-greider-2fe018\\\\next.config.ts\\\"\",\"description\":\"Delete next.config.ts via PowerShell\"}",
-  "error": "Exit code 127\n/usr/bin/bash: line 1: Remove-Item: command not found",
-  "timestamp": "2026-05-22T01:02:53.178Z",
-  "retry_count": 1
-}
