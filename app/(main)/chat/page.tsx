@@ -164,37 +164,29 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div
-      className="flex flex-col h-full"
-      style={{ backgroundColor: "#F5F5F5" }}
-    >
+    <div className="flex flex-col h-full">
       {/* Session controls */}
       <div className="mx-4 mt-3 mb-2 flex gap-2 flex-shrink-0">
         <div className="relative flex-1">
           <button
             onClick={() => setShowHistoryMenu(!showHistoryMenu)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl"
+            className="glass-pill-green w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl"
             style={{
-              backgroundColor: "white",
-              border: "1.5px solid #E0E0E0",
               fontSize: "13px",
               fontWeight: 600,
-              color: "#616161",
+              color: "#2D7A3E",
             }}
           >
             <MessageSquare size={16} />
             대화 기록
           </button>
           {showHistoryMenu && (
-            <div
-              className="absolute top-full left-0 right-0 mt-2 rounded-xl shadow-xl overflow-hidden z-10"
-              style={{ backgroundColor: "white", border: "1px solid #E0E0E0" }}
-            >
+            <div className="glass-card-strong absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden z-10">
               <div
                 className="px-3 py-2"
                 style={{
-                  backgroundColor: "#F5F5F5",
-                  borderBottom: "1px solid #E0E0E0",
+                  background: "rgba(232, 245, 233, 0.6)",
+                  borderBottom: "1px solid rgb(var(--glass-accent) / 0.12)",
                 }}
               >
                 <p
@@ -225,8 +217,10 @@ export default function ChatbotPage() {
                 <button
                   key={session.id}
                   onClick={() => setShowHistoryMenu(false)}
-                  className="w-full px-3 py-2.5 text-left hover:bg-green-50 transition-colors"
-                  style={{ borderBottom: "1px solid #F5F5F5" }}
+                  className="glass-row w-full px-3 py-2.5 text-left"
+                  style={{
+                    borderBottom: "1px solid rgb(var(--glass-accent) / 0.1)",
+                  }}
                 >
                   <p
                     style={{
@@ -342,21 +336,16 @@ export default function ChatbotPage() {
       </div>
 
       {/* Input */}
-      <div
-        className="px-4 py-3 flex-shrink-0 flex items-center gap-2"
-        style={{ borderTop: "1px solid #E0E0E0", backgroundColor: "white" }}
-      >
+      <div className="glass-bar-top px-4 py-3 flex-shrink-0 flex items-center gap-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
           placeholder="질병에 대해 질문하세요..."
-          className="flex-1 px-4 py-3 rounded-2xl outline-none chat-input"
+          className="glass-pill flex-1 px-4 py-3 rounded-2xl outline-none chat-input"
           style={{
-            backgroundColor: "#F5F5F5",
             fontSize: "14px",
-            color: "#333",
-            border: "1.5px solid transparent",
+            color: "rgb(var(--glass-text) / 0.9)",
           }}
         />
         <button

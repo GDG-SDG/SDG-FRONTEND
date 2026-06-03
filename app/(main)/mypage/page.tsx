@@ -60,18 +60,15 @@ export default function MyPage() {
   ];
 
   return (
-    <div
-      className="h-full overflow-y-auto"
-      style={{ backgroundColor: "#F5F5F5", paddingBottom: "24px" }}
-    >
+    <div className="h-full overflow-y-auto" style={{ paddingBottom: "24px" }}>
       {/* Profile section */}
-      <div
-        className="mx-4 mt-4 rounded-2xl overflow-hidden shadow-sm"
-        style={{ backgroundColor: "white" }}
-      >
+      <div className="glass-card-strong mx-4 mt-4 rounded-2xl overflow-hidden">
         <div
           className="px-5 py-6 flex items-center gap-4"
-          style={{ backgroundColor: "#F5F5F5" }}
+          style={{
+            background: "rgba(232, 245, 233, 0.6)",
+            borderBottom: "1px solid rgb(var(--glass-accent) / 0.12)",
+          }}
         >
           <div
             className="w-20 h-20 rounded-full flex items-center justify-center flex-shrink-0"
@@ -86,14 +83,11 @@ export default function MyPage() {
               >
                 {userInfo.name}
               </h1>
-              <button
-                className="w-7 h-7 rounded-full flex items-center justify-center"
-                style={{
-                  backgroundColor: "white",
-                  border: "1px solid #E0E0E0",
-                }}
-              >
-                <Edit size={14} style={{ color: "#616161" }} />
+              <button className="glass-pill w-7 h-7 rounded-full flex items-center justify-center">
+                <Edit
+                  size={14}
+                  style={{ color: "rgb(var(--glass-text) / 0.75)" }}
+                />
               </button>
             </div>
             <p style={{ fontSize: "13px", color: "#757575" }}>
@@ -162,15 +156,15 @@ export default function MyPage() {
 
       {/* Menu items */}
       <div className="mx-4 mt-3">
-        <div
-          className="rounded-2xl overflow-hidden shadow-sm"
-          style={{ backgroundColor: "white" }}
-        >
+        <div className="glass-card-strong rounded-2xl overflow-hidden">
           {menuItems.map((item, idx) => (
             <button
               key={item.label}
-              className="w-full flex items-center gap-3 px-5 py-4 transition-all active:bg-gray-50"
-              style={{ borderTop: idx > 0 ? "1px solid #F5F5F5" : "none" }}
+              className="glass-row w-full flex items-center gap-3 px-5 py-4"
+              style={{
+                borderTop:
+                  idx > 0 ? "1px solid rgb(var(--glass-accent) / 0.1)" : "none",
+              }}
             >
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
