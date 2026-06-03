@@ -181,3 +181,11 @@
 .glass-row:active {
   background-color: rgba(255, 255, 255, 0.55);
 }
+
+/* Hide scrollbars app-wide while keeping scroll functionality */
+* {
+  scrollbar-width: none; /* Firefox */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chrome / Safari */
+}
