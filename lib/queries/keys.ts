@@ -8,4 +8,7 @@ export const queryKeys = {
   mypageSummary: ["users", "mypage", "summary"] as const,
   monthlyStats: (year: number) =>
     ["diagnoses", "stats", "monthly", year] as const,
+  chatSessions: ["chat", "sessions"] as const,
+  chatMessages: (sessionId: string) =>
+    ["chat", "sessions", sessionId, "messages"] as const,
 };

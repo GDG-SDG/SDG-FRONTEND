@@ -10,24 +10,23 @@ import {
   MessageSquare,
   Plus,
 } from "lucide-react";
+import { QUICK_QUESTIONS } from "@/lib/data/mockData";
+import type { ChatMessage } from "@/lib/types/chat";
 import {
-  DIAGNOSIS_RECORDS,
-  CHAT_HISTORY_MOCK,
-  QUICK_QUESTIONS,
-  AI_RESPONSES,
-  getSeverityColor,
-} from "@/lib/data/mockData";
+  createChatSession,
+  getChatMessages,
+  sendChatMessage,
+} from "@/lib/api/chat";
+import { useChatSessions } from "@/lib/queries/useChat";
 
-type Message = {
-  id: string;
-  role: "ai" | "user";
-  text: string;
-  verified?: boolean;
-  source?: string;
-  timestamp: string;
-};
+const nowHHMM = () =>
+  new Date().toLocaleTimeString("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 
-function ChatBubble({ message }: { message: Message }) {
+function ChatBubble({ message }: { message: ChatMessage }) {
   const isAI = message.role === "ai";
   return (
     <div className={`flex items-end gap-2 ${isAI ? "" : "flex-row-reverse"}`}>
@@ -108,59 +107,62 @@ function ChatBubble({ message }: { message: Message }) {
 }
 
 export default function ChatbotPage() {
-  const [messages, setMessages] = useState<Message[]>(CHAT_HISTORY_MOCK);
+  const { data: sessions } = useChatSessions();
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showHistoryMenu, setShowHistoryMenu] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const contextRecord = DIAGNOSIS_RECORDS[0];
-  const topDisease = contextRecord.results[0];
+  // 진입 시 자유 채팅 세션 생성 + 환영 메시지 로드
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const session = await createChatSession({ type: "free" });
+      if (!mounted) return;
+      setSessionId(session.sessionId);
+      setMessages(await getChatMessages(session.sessionId));
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const sendMessage = (text: string) => {
-    if (!text.trim() || isTyping) return;
-    const userMsg: Message = {
+  const handleSend = async (text: string) => {
+    if (!text.trim() || isTyping || !sessionId) return;
+    const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       role: "user",
       text,
-      timestamp: new Date().toLocaleTimeString("ko-KR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }),
+      timestamp: nowHHMM(),
     };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsTyping(true);
+    try {
+      const aiMsg = await sendChatMessage({ sessionId, message: text });
+      setMessages((prev) => [...prev, aiMsg]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
 
-    setTimeout(
-      () => {
-        const aiText =
-          AI_RESPONSES[text] ||
-          `${topDisease.diseaseKr}에 관한 질문이군요. 현재 감염 상태(${contextRecord.primarySeverity})를 고려할 때, 농촌진흥청 지침에 따라 방제 조치를 취하시기 바랍니다. 더 구체적인 내용은 가까운 농업기술센터에 문의하세요.`;
-        const aiMsg: Message = {
-          id: `msg-${Date.now() + 1}`,
-          role: "ai",
-          text: aiText,
-          verified: !!AI_RESPONSES[text],
-          source: AI_RESPONSES[text]
-            ? "농촌진흥청 병해충 관리 지침"
-            : undefined,
-          timestamp: new Date().toLocaleTimeString("ko-KR", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          }),
-        };
-        setIsTyping(false);
-        setMessages((prev) => [...prev, aiMsg]);
-      },
-      1500 + Math.random() * 1000,
-    );
+  const handleNewChat = async () => {
+    setShowHistoryMenu(false);
+    const session = await createChatSession({ type: "free" });
+    setSessionId(session.sessionId);
+    setMessages(await getChatMessages(session.sessionId));
+  };
+
+  const handleSelectSession = async (sid: string) => {
+    setShowHistoryMenu(false);
+    setSessionId(sid);
+    setMessages(await getChatMessages(sid));
   };
 
   return (
@@ -199,52 +201,50 @@ export default function ChatbotPage() {
                   최근 대화
                 </p>
               </div>
-              {[
-                {
-                  id: 1,
-                  title: "탄저병 방제 문의",
-                  date: "4월 28일",
-                  messages: 12,
-                },
-                {
-                  id: 2,
-                  title: "흰가루병 증상 확인",
-                  date: "4월 25일",
-                  messages: 8,
-                },
-                { id: 3, title: "역병 예방법", date: "4월 22일", messages: 15 },
-              ].map((session) => (
-                <button
-                  key={session.id}
-                  onClick={() => setShowHistoryMenu(false)}
-                  className="glass-row w-full px-3 py-2.5 text-left"
-                  style={{
-                    borderBottom: "1px solid rgb(var(--glass-accent) / 0.1)",
-                  }}
-                >
-                  <p
+              {(sessions ?? []).length === 0 ? (
+                <div className="px-3 py-4">
+                  <p style={{ fontSize: "12px", color: "#9E9E9E" }}>
+                    대화 기록이 없습니다
+                  </p>
+                </div>
+              ) : (
+                (sessions ?? []).map((session) => (
+                  <button
+                    key={session.sessionId}
+                    onClick={() => handleSelectSession(session.sessionId)}
+                    className="glass-row w-full px-3 py-2.5 text-left"
                     style={{
-                      fontSize: "13px",
-                      fontWeight: 600,
-                      color: "#333",
-                      marginBottom: "2px",
+                      borderBottom: "1px solid rgb(var(--glass-accent) / 0.1)",
                     }}
                   >
-                    {session.title}
-                  </p>
-                  <p style={{ fontSize: "11px", color: "#9E9E9E" }}>
-                    {session.date} · {session.messages}개 메시지
-                  </p>
-                </button>
-              ))}
+                    <p
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        color: "#333",
+                        marginBottom: "2px",
+                      }}
+                    >
+                      {session.title}
+                    </p>
+                    <p
+                      className="truncate"
+                      style={{ fontSize: "11px", color: "#9E9E9E" }}
+                    >
+                      {new Date(session.updatedAt).toLocaleDateString("ko-KR", {
+                        month: "long",
+                        day: "numeric",
+                      })}{" "}
+                      · {session.lastMessage}
+                    </p>
+                  </button>
+                ))
+              )}
             </div>
           )}
         </div>
         <button
-          onClick={() => {
-            setMessages([]);
-            setShowHistoryMenu(false);
-          }}
+          onClick={handleNewChat}
           className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl"
           style={{
             backgroundColor: "#2D7A3E",
@@ -317,7 +317,7 @@ export default function ChatbotPage() {
           {QUICK_QUESTIONS.map((q) => (
             <button
               key={q}
-              onClick={() => sendMessage(q)}
+              onClick={() => handleSend(q)}
               disabled={isTyping}
               className="px-3 py-2 rounded-xl flex-shrink-0 transition-all active:scale-95"
               style={{
@@ -340,7 +340,10 @@ export default function ChatbotPage() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
+          onKeyDown={(e) => {
+            if (e.nativeEvent.isComposing) return;
+            if (e.key === "Enter") handleSend(input);
+          }}
           placeholder="질병에 대해 질문하세요..."
           className="glass-pill flex-1 px-4 py-3 rounded-2xl outline-none chat-input"
           style={{
@@ -349,7 +352,7 @@ export default function ChatbotPage() {
           }}
         />
         <button
-          onClick={() => sendMessage(input)}
+          onClick={() => handleSend(input)}
           disabled={!input.trim() || isTyping}
           className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 active:scale-95 transition-all"
           style={{
