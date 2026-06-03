@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
-import { DiagnosisRecord, getSeverityColor } from "@/lib/data/mockData";
+import { getSeverityColor } from "@/lib/data/mockData";
+import type { DiagnosisListItem } from "@/lib/types/diagnosis";
 import { SeverityBadge } from "./SeverityBadge";
 import { ConfidenceBar } from "./ConfidenceBar";
 
@@ -9,16 +10,18 @@ export function DiagnosisCard({
   selected,
   onSelect,
 }: {
-  record: DiagnosisRecord;
+  record: DiagnosisListItem;
   selected: boolean;
   onSelect: () => void;
 }) {
-  const topResult = record.results[0];
-  const colors = getSeverityColor(record.primarySeverity);
-  const dateFormatted = new Date(record.date).toLocaleDateString("ko-KR", {
-    month: "long",
-    day: "numeric",
-  });
+  const colors = getSeverityColor(record.severity);
+  const dateFormatted = new Date(record.diagnosedAt).toLocaleDateString(
+    "ko-KR",
+    {
+      month: "long",
+      day: "numeric",
+    },
+  );
 
   return (
     <div
@@ -30,7 +33,7 @@ export function DiagnosisCard({
           <div className="relative flex-shrink-0 w-20 h-20">
             <Image
               src={record.imageUrl}
-              alt={record.crop}
+              alt={record.cropName}
               fill
               className="object-cover rounded-xl"
               sizes="80px"
@@ -38,10 +41,10 @@ export function DiagnosisCard({
             <div
               className="absolute rounded-[3px]"
               style={{
-                left: `${topResult.lesionArea.x * 0.8}%`,
-                top: `${topResult.lesionArea.y * 0.8}%`,
-                width: `${topResult.lesionArea.w}%`,
-                height: `${topResult.lesionArea.h}%`,
+                left: `${record.lesionArea.x * 0.8}%`,
+                top: `${record.lesionArea.y * 0.8}%`,
+                width: `${record.lesionArea.w}%`,
+                height: `${record.lesionArea.h}%`,
                 border: `2px solid ${colors.dot}`,
               }}
             />
@@ -55,16 +58,16 @@ export function DiagnosisCard({
                 className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
                 style={{ backgroundColor: "#E8F5E9", color: "#2D7A3E" }}
               >
-                {record.crop}
+                {record.cropName}
               </span>
             </div>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="text-[17px] font-extrabold text-[#1a1a1a]">
-                {topResult.diseaseKr}
+                {record.diseaseName}
               </span>
-              <SeverityBadge severity={record.primarySeverity} />
+              <SeverityBadge severity={record.severity} />
             </div>
-            <ConfidenceBar value={topResult.confidence} />
+            <ConfidenceBar value={record.confidence} />
             <p
               className="mt-1.5 overflow-hidden text-xs text-[#757575]"
               style={{
@@ -73,7 +76,7 @@ export function DiagnosisCard({
                 WebkitBoxOrient: "vertical" as const,
               }}
             >
-              {topResult.description}
+              {record.description}
             </p>
           </div>
           <ChevronRight

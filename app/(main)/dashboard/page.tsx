@@ -11,8 +11,9 @@ import {
   ChevronDown,
   X,
 } from "lucide-react";
-import { DIAGNOSIS_RECORDS, getSeverityColor } from "@/lib/data/mockData";
+import { getSeverityColor } from "@/lib/data/mockData";
 import { DiagnosisCard } from "@/components/dashboard/DiagnosisCard";
+import { useDiagnoses, useDiagnosisDetail } from "@/lib/queries/useDiagnoses";
 
 type FilterSeverity = "전체" | "심각" | "보통" | "경미";
 type FilterCrop = "전체" | "고추" | "토마토" | "딸기" | "오이";
@@ -21,14 +22,16 @@ export default function DashboardPage() {
   const router = useRouter();
   const [filterSeverity, setFilterSeverity] = useState<FilterSeverity>("전체");
   const [filterCrop, setFilterCrop] = useState<FilterCrop>("전체");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [showSeverityDropdown, setShowSeverityDropdown] = useState(false);
   const [showCropDropdown, setShowCropDropdown] = useState(false);
 
-  const filtered = DIAGNOSIS_RECORDS.filter((r) => {
-    const sev =
-      filterSeverity === "전체" || r.primarySeverity === filterSeverity;
-    const crop = filterCrop === "전체" || r.crop === filterCrop;
+  const { data, isLoading, isError } = useDiagnoses();
+  const { data: detail } = useDiagnosisDetail(selectedId);
+
+  const filtered = (data?.content ?? []).filter((r) => {
+    const sev = filterSeverity === "전체" || r.severity === filterSeverity;
+    const crop = filterCrop === "전체" || r.cropName === filterCrop;
     return sev && crop;
   });
 
@@ -168,7 +171,27 @@ export default function DashboardPage() {
 
         {/* Cards */}
         <div className="px-5 pb-4 flex flex-col gap-3">
-          {filtered.length === 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <p
+                style={{ fontSize: "15px", color: "#9E9E9E", fontWeight: 500 }}
+              >
+                진단 기록을 불러오는 중...
+              </p>
+            </div>
+          ) : isError ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Info
+                size={40}
+                style={{ color: "#F44336", marginBottom: "12px" }}
+              />
+              <p
+                style={{ fontSize: "15px", color: "#9E9E9E", fontWeight: 500 }}
+              >
+                기록을 불러오지 못했습니다
+              </p>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
               <Info
                 size={40}
@@ -196,12 +219,11 @@ export default function DashboardPage() {
       </div>
 
       {/* Detail modal */}
-      {selectedId &&
+      {selectedId !== null &&
+        detail &&
         (() => {
-          const record = DIAGNOSIS_RECORDS.find((r) => r.id === selectedId);
-          if (!record) return null;
-          const topResult = record.results[0];
-          const colors = getSeverityColor(record.primarySeverity);
+          const topResult = detail.results[0];
+          const colors = getSeverityColor(detail.severity);
 
           return (
             <div
@@ -235,7 +257,7 @@ export default function DashboardPage() {
                         color: colors.text,
                       }}
                     >
-                      {topResult.diseaseKr} - {record.primarySeverity}
+                      {topResult.diseaseNameKr} - {detail.severity}
                     </p>
                     <p
                       style={{
@@ -244,8 +266,8 @@ export default function DashboardPage() {
                         opacity: 0.8,
                       }}
                     >
-                      신뢰도 {topResult.confidence}% · {record.crop} ·{" "}
-                      {record.location}
+                      신뢰도 {topResult.confidence}% · {detail.cropName} ·{" "}
+                      {detail.location}
                     </p>
                   </div>
                   <button
@@ -354,8 +376,11 @@ export default function DashboardPage() {
                       💊 회복 및 방제 방법
                     </h4>
                     <div className="space-y-2">
-                      {topResult.treatmentSteps.map((step, i) => (
-                        <div key={i} className="flex items-start gap-2">
+                      {topResult.treatmentSteps.map((step) => (
+                        <div
+                          key={step.stepOrder}
+                          className="flex items-start gap-2"
+                        >
                           <div
                             className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
                             style={{
@@ -365,17 +390,40 @@ export default function DashboardPage() {
                               color: "white",
                             }}
                           >
-                            {i + 1}
+                            {step.stepOrder}
                           </div>
-                          <p
-                            style={{
-                              fontSize: "11px",
-                              color: "#333",
-                              lineHeight: 1.6,
-                            }}
-                          >
-                            {step}
-                          </p>
+                          <div className="flex-1">
+                            <p
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: 700,
+                                color: "#1a1a1a",
+                                lineHeight: 1.6,
+                              }}
+                            >
+                              {step.title}
+                            </p>
+                            <p
+                              style={{
+                                fontSize: "11px",
+                                color: "#333",
+                                lineHeight: 1.6,
+                              }}
+                            >
+                              {step.description}
+                            </p>
+                            {step.chemical && (
+                              <p
+                                style={{
+                                  fontSize: "10px",
+                                  color: "#FF6B35",
+                                  marginTop: "2px",
+                                }}
+                              >
+                                💊 {step.chemical}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
