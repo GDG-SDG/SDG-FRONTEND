@@ -13,6 +13,39 @@ import {
   Shield,
   HelpCircle,
 } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useMypage, useMypageSummary } from "@/lib/queries/useUser";
+import { useMonthlyStats } from "@/lib/queries/useDiagnoses";
+
+const BarChart = dynamic(() => import("recharts").then((m) => m.BarChart), {
+  ssr: false,
+});
+const Bar = dynamic(() => import("recharts").then((m) => m.Bar), {
+  ssr: false,
+});
+const XAxis = dynamic(() => import("recharts").then((m) => m.XAxis), {
+  ssr: false,
+});
+const YAxis = dynamic(() => import("recharts").then((m) => m.YAxis), {
+  ssr: false,
+});
+const Tooltip = dynamic(() => import("recharts").then((m) => m.Tooltip), {
+  ssr: false,
+});
+const CartesianGrid = dynamic(
+  () => import("recharts").then((m) => m.CartesianGrid),
+  { ssr: false },
+);
+const ResponsiveContainer = dynamic(
+  () => import("recharts").then((m) => m.ResponsiveContainer),
+  { ssr: false },
+);
+
+const formatJoinDate = (iso?: string) => {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+};
 
 function InfoRow({
   icon: Icon,
@@ -44,14 +77,16 @@ function InfoRow({
 }
 
 export default function MyPage() {
-  const userInfo = {
-    name: "김농부",
-    email: "farmer.kim@example.com",
-    phone: "010-1234-5678",
-    location: "경기도 이천시",
-    joinDate: "2025년 3월 15일",
-    farmType: "노지 재배",
-  };
+  const { data: profile } = useMypage();
+  const { data: summary } = useMypageSummary();
+  const year = new Date().getFullYear();
+  const { data: monthlyStats } = useMonthlyStats(year);
+
+  const chartData = (monthlyStats ?? []).map((s) => ({
+    월: `${s.month}월`,
+    총진단: s.totalCount,
+    심각: s.severeCount,
+  }));
 
   const menuItems = [
     { icon: Bell, label: "알림 설정", color: "#FF6B35" },
@@ -81,7 +116,7 @@ export default function MyPage() {
               <h1
                 style={{ fontSize: "20px", fontWeight: 800, color: "#1a1a1a" }}
               >
-                {userInfo.name}
+                {profile?.name ?? "-"}
               </h1>
               <button className="glass-pill w-7 h-7 rounded-full flex items-center justify-center">
                 <Edit
@@ -91,15 +126,27 @@ export default function MyPage() {
               </button>
             </div>
             <p style={{ fontSize: "13px", color: "#757575" }}>
-              {userInfo.farmType}
+              {profile?.farmType ?? "-"}
             </p>
           </div>
         </div>
         <div className="px-5 py-4">
-          <InfoRow icon={Mail} label="이메일" value={userInfo.email} />
-          <InfoRow icon={Phone} label="전화번호" value={userInfo.phone} />
-          <InfoRow icon={MapPin} label="위치" value={userInfo.location} />
-          <InfoRow icon={Calendar} label="가입일" value={userInfo.joinDate} />
+          <InfoRow icon={Mail} label="이메일" value={profile?.email ?? "-"} />
+          <InfoRow
+            icon={Phone}
+            label="전화번호"
+            value={profile?.phone ?? "-"}
+          />
+          <InfoRow
+            icon={MapPin}
+            label="위치"
+            value={profile?.location ?? "-"}
+          />
+          <InfoRow
+            icon={Calendar}
+            label="가입일"
+            value={formatJoinDate(profile?.joinedAt)}
+          />
         </div>
       </div>
 
@@ -109,21 +156,21 @@ export default function MyPage() {
           {[
             {
               label: "총 진단",
-              value: "24",
+              value: String(summary?.totalDiagnosisCount ?? 0),
               sub: "건",
               color: "#2D7A3E",
               bg: "#E8F5E9",
             },
             {
               label: "이번 달",
-              value: "5",
+              value: String(summary?.monthlyDiagnosisCount ?? 0),
               sub: "건",
               color: "#FF6B35",
               bg: "#FFF3E0",
             },
             {
               label: "방제 완료",
-              value: "19",
+              value: String(summary?.treatmentCompletedCount ?? 0),
               sub: "건",
               color: "#1976D2",
               bg: "#E3F2FD",
@@ -151,6 +198,70 @@ export default function MyPage() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* 연간 진단 추이 */}
+      <div className="mx-4 mt-3">
+        <div className="glass-card-strong rounded-2xl overflow-hidden">
+          <div
+            className="px-4 py-3"
+            style={{
+              background: "rgba(232, 245, 233, 0.6)",
+              borderBottom: "1px solid rgb(var(--glass-accent) / 0.12)",
+            }}
+          >
+            <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#1a1a1a" }}>
+              {year}년 진단 추이
+            </h3>
+            <p style={{ fontSize: "11px", color: "#9E9E9E" }}>월별 진단 건수</p>
+          </div>
+          <div className="px-3 py-3">
+            {chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={140}>
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 5, right: 5, left: -20, bottom: 5 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="#F0F0F0"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="월"
+                    tick={{ fontSize: 9, fill: "#9E9E9E" }}
+                    stroke="#E0E0E0"
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 9, fill: "#9E9E9E" }}
+                    stroke="#E0E0E0"
+                    allowDecimals={false}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "white",
+                      border: "1px solid #E0E0E0",
+                      borderRadius: "6px",
+                      fontSize: "10px",
+                      padding: "4px 8px",
+                    }}
+                  />
+                  <Bar dataKey="총진단" fill="#2D7A3E" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="심각" fill="#F44336" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="py-6 text-center">
+                <p style={{ fontSize: "12px", color: "#BDBDBD" }}>
+                  통계가 없습니다
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
