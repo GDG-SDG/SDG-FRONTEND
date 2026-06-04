@@ -6,8 +6,10 @@ export const queryKeys = {
     ["diagnoses", "list", filters ?? {}] as const,
   diagnosisDetail: (id: number) => ["diagnoses", "detail", id] as const,
   similarCases: (id: number) => ["diagnoses", "similar", id] as const,
+  crops: ["crops"] as const,
   mypage: ["users", "mypage"] as const,
   mypageSummary: ["users", "mypage", "summary"] as const,
+  notificationSettings: ["users", "notification-settings"] as const,
   monthlyStats: (year: number) =>
     ["diagnoses", "stats", "monthly", year] as const,
   chatSessions: ["chat", "sessions"] as const,

@@ -19,20 +19,22 @@ import {
   useSimilarCases,
   useUpdateTreatmentStatus,
 } from "@/lib/queries/useDiagnoses";
+import { useCrops } from "@/lib/queries/useCrops";
 
 type FilterSeverity = "전체" | "심각" | "보통" | "경미";
-type FilterCrop = "전체" | "고추" | "토마토" | "딸기" | "오이";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [filterSeverity, setFilterSeverity] = useState<FilterSeverity>("전체");
-  const [filterCrop, setFilterCrop] = useState<FilterCrop>("전체");
+  const [filterCrop, setFilterCrop] = useState<string>("전체");
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [showSeverityDropdown, setShowSeverityDropdown] = useState(false);
   const [showCropDropdown, setShowCropDropdown] = useState(false);
 
   const { data, isLoading, isError } = useDiagnoses();
+  const { data: crops } = useCrops();
   const { data: detail } = useDiagnosisDetail(selectedId);
+  const cropFilterOptions = ["전체", ...(crops ?? []).map((c) => c.name)];
   const { data: similarCases } = useSimilarCases(selectedId);
   const updateStatus = useUpdateTreatmentStatus();
 
@@ -146,9 +148,7 @@ export default function DashboardPage() {
               </button>
               {showCropDropdown && (
                 <div className="glass-card-strong absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden z-10">
-                  {(
-                    ["전체", "고추", "토마토", "딸기", "오이"] as FilterCrop[]
-                  ).map((c) => (
+                  {cropFilterOptions.map((c) => (
                     <button
                       key={c}
                       onClick={() => {
