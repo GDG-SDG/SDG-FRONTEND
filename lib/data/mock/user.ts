@@ -1,5 +1,9 @@
 // API 응답 형태(api-spec.md)에 맞춘 사용자 mock
-import type { Mypage, MypageSummary } from "@/lib/types/user";
+import type {
+  Mypage,
+  MypageSummary,
+  NotificationSettings,
+} from "@/lib/types/user";
 
 /** GET /users/mypage */
 export const MOCK_MYPAGE: Mypage = {
@@ -17,4 +21,11 @@ export const MOCK_MYPAGE_SUMMARY: MypageSummary = {
   totalDiagnosisCount: 24,
   monthlyDiagnosisCount: 5,
   treatmentCompletedCount: 19,
+};
+
+/** GET /users/notification-settings (mock — 갱신 시 직접 수정) */
+export const MOCK_NOTIFICATION_SETTINGS: NotificationSettings = {
+  diagnosisResult: true,
+  treatmentReminder: true,
+  weatherAlert: false,
 };

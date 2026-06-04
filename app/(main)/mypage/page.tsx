@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   User,
   Mail,
@@ -16,6 +17,14 @@ import {
 import dynamic from "next/dynamic";
 import { useMypage, useMypageSummary } from "@/lib/queries/useUser";
 import { useMonthlyStats } from "@/lib/queries/useDiagnoses";
+import {
+  NotificationSettingsModal,
+  ProfileEditModal,
+  PasswordChangeModal,
+  WithdrawModal,
+} from "@/components/mypage/AccountModals";
+
+type AccountModal = "notification" | "profile" | "password" | "withdraw";
 
 const BarChart = dynamic(() => import("recharts").then((m) => m.BarChart), {
   ssr: false,
@@ -82,6 +91,8 @@ export default function MyPage() {
   const year = new Date().getFullYear();
   const { data: monthlyStats } = useMonthlyStats(year);
 
+  const [activeModal, setActiveModal] = useState<AccountModal | null>(null);
+
   const chartData = (monthlyStats ?? []).map((s) => ({
     월: `${s.month}월`,
     총진단: s.totalCount,
@@ -89,9 +100,24 @@ export default function MyPage() {
   }));
 
   const menuItems = [
-    { icon: Bell, label: "알림 설정", color: "#FF6B35" },
-    { icon: Shield, label: "개인정보 보호", color: "#2D7A3E" },
-    { icon: HelpCircle, label: "고객 지원", color: "#1976D2" },
+    {
+      icon: Bell,
+      label: "알림 설정",
+      color: "#FF6B35",
+      onClick: () => setActiveModal("notification"),
+    },
+    {
+      icon: Shield,
+      label: "비밀번호 변경",
+      color: "#2D7A3E",
+      onClick: () => setActiveModal("password"),
+    },
+    {
+      icon: HelpCircle,
+      label: "고객 지원",
+      color: "#1976D2",
+      onClick: () => {},
+    },
   ];
 
   return (
@@ -118,7 +144,10 @@ export default function MyPage() {
               >
                 {profile?.name ?? "-"}
               </h1>
-              <button className="glass-pill w-7 h-7 rounded-full flex items-center justify-center">
+              <button
+                onClick={() => setActiveModal("profile")}
+                className="glass-pill w-7 h-7 rounded-full flex items-center justify-center"
+              >
                 <Edit
                   size={14}
                   style={{ color: "rgb(var(--glass-text) / 0.75)" }}
@@ -271,6 +300,7 @@ export default function MyPage() {
           {menuItems.map((item, idx) => (
             <button
               key={item.label}
+              onClick={item.onClick}
               className="glass-row w-full flex items-center gap-3 px-5 py-4"
               style={{
                 borderTop:
@@ -308,6 +338,13 @@ export default function MyPage() {
             로그아웃
           </span>
         </button>
+        <button
+          onClick={() => setActiveModal("withdraw")}
+          className="w-full mt-2 py-2 text-center"
+          style={{ fontSize: "12px", color: "#9E9E9E", fontWeight: 500 }}
+        >
+          회원 탈퇴
+        </button>
       </div>
 
       {/* App version */}
@@ -317,6 +354,23 @@ export default function MyPage() {
           © 2026 FarmCare AI. All rights reserved.
         </p>
       </div>
+
+      {/* Account modals */}
+      {activeModal === "notification" && (
+        <NotificationSettingsModal onClose={() => setActiveModal(null)} />
+      )}
+      {activeModal === "profile" && profile && (
+        <ProfileEditModal
+          profile={profile}
+          onClose={() => setActiveModal(null)}
+        />
+      )}
+      {activeModal === "password" && (
+        <PasswordChangeModal onClose={() => setActiveModal(null)} />
+      )}
+      {activeModal === "withdraw" && (
+        <WithdrawModal onClose={() => setActiveModal(null)} />
+      )}
     </div>
   );
 }

@@ -17,3 +17,24 @@ export interface MypageSummary {
   monthlyDiagnosisCount: number;
   treatmentCompletedCount: number;
 }
+
+/** GET/PATCH /users/notification-settings */
+export interface NotificationSettings {
+  diagnosisResult: boolean;
+  treatmentReminder: boolean;
+  weatherAlert: boolean;
+}
+
+/** PATCH /users/mypage 요청 */
+export interface UpdateMypageRequest {
+  name: string;
+  phone: string;
+  location: string;
+  farmType: string;
+}
+
+/** PATCH /users/password 요청 */
+export interface UpdatePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
