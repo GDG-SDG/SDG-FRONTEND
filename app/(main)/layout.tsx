@@ -8,9 +8,8 @@ import {
   CalendarDays,
   MessageSquare,
   User,
-  Wifi,
 } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
 
 const NAV_ITEMS = [
   { path: "/dashboard", icon: LayoutDashboard },
@@ -20,22 +19,6 @@ const NAV_ITEMS = [
   { path: "/mypage", icon: User },
 ];
 
-function StatusBar({ time }: { time: string }) {
-  return (
-    <div
-      className="glass-bar flex items-center justify-between px-6 py-2.5 flex-shrink-0 text-[11px] font-semibold"
-      style={{ color: "rgb(var(--glass-text) / 0.9)" }}
-    >
-      <span>{time}</span>
-      <div className="flex items-center gap-1">
-        <Wifi size={12} />
-        <span>4G</span>
-        <span>🔋</span>
-      </div>
-    </div>
-  );
-}
-
 export default function MainLayout({
   children,
 }: {
@@ -43,125 +26,90 @@ export default function MainLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [time, setTime] = useState("");
-
-  useEffect(() => {
-    const update = () => {
-      const now = new Date();
-      setTime(
-        now.toLocaleTimeString("ko-KR", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }),
-      );
-    };
-    update();
-    const interval = setInterval(update, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
   const isActive = useCallback((path: string) => pathname === path, [pathname]);
 
   return (
     <div
-      className="flex items-center justify-center min-h-screen"
-      style={{
-        background:
-          "linear-gradient(145deg, #c8ddd0 0%, #b8ccbe 50%, #a8bcae 100%)",
-      }}
+      className="page-bg relative flex flex-col overflow-hidden"
+      style={{ height: "100dvh" }}
     >
+      {/* Main content */}
       <div
-        className="page-bg relative flex flex-col overflow-hidden shadow-2xl"
-        style={{
-          width: "390px",
-          height: "844px",
-          borderRadius: "44px",
-          border: "3px solid #1a1a1a",
-        }}
+        className="flex-1 overflow-y-auto"
+        style={{ paddingTop: "max(env(safe-area-inset-top), 16px)" }}
       >
-        <StatusBar time={time} />
+        {children}
+      </div>
 
-        {/* Main content */}
+      {/* Liquid glass bottom nav — layoutId sliding pill */}
+      <div className="flex-shrink-0 px-4 pb-4 pt-2">
         <div
-          className="flex-1 overflow-y-auto"
-          style={{
-            scrollbarWidth: "thin",
-            scrollbarColor: "rgb(var(--glass-accent) / 0.4) transparent",
-          }}
+          className="glass-card flex items-center justify-between"
+          style={{ borderRadius: "36px", padding: "10px 14px" }}
         >
-          {children}
-        </div>
-
-        {/* Liquid glass bottom nav — layoutId sliding pill */}
-        <div className="flex-shrink-0 px-4 pb-4 pt-2">
-          <div
-            className="glass-card flex items-center justify-between"
-            style={{ borderRadius: "36px", padding: "10px 14px" }}
-          >
-            {NAV_ITEMS.map(({ path, icon: Icon, isCamera }) => {
-              const active = isActive(path);
-              return (
-                <button
-                  key={path}
-                  onClick={() => router.push(path)}
-                  className="relative flex items-center justify-center"
-                  style={{
-                    width: "52px",
-                    height: "52px",
-                    WebkitTapHighlightColor: "transparent",
-                  }}
-                >
-                  {active && (
-                    <motion.div
-                      layoutId="nav-pill"
-                      className="absolute inset-0"
-                      style={{
-                        borderRadius: isCamera ? "50%" : "18px",
-                        background: isCamera
-                          ? "rgba(35,105,55,0.68)"
-                          : "rgba(20,50,30,0.22)",
-                        backdropFilter: "blur(24px) saturate(180%)",
-                        WebkitBackdropFilter: "blur(24px) saturate(180%)",
-                        border: "1px solid rgba(255,255,255,0.3)",
-                        boxShadow: isCamera
-                          ? [
-                              "0 6px 20px rgba(30,90,50,0.45)",
-                              "inset 0 1.5px 0 rgba(255,255,255,0.45)",
-                              "inset 0 -1px 0 rgba(0,0,0,0.12)",
-                            ].join(", ")
-                          : [
-                              "inset 0 1px 0 rgba(255,255,255,0.5)",
-                              "0 4px 12px rgba(0,0,0,0.1)",
-                            ].join(", "),
-                      }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 380,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-
+          {NAV_ITEMS.map(({ path, icon: Icon, isCamera }) => {
+            const active = isActive(path);
+            return (
+              <button
+                key={path}
+                onClick={() => router.push(path)}
+                className="relative flex items-center justify-center"
+                style={{
+                  width: "52px",
+                  height: "52px",
+                  WebkitTapHighlightColor: "transparent",
+                }}
+              >
+                {active && (
                   <motion.div
-                    className="relative z-10 flex items-center justify-center"
-                    animate={{
-                      color: active
-                        ? isCamera
-                          ? "rgba(255,255,255,0.93)"
-                          : "rgb(var(--glass-text) / 0.9)"
-                        : "rgba(100,130,108,0.7)",
-                      scale: active ? 1 : 0.95,
+                    layoutId="nav-pill"
+                    className="absolute inset-0"
+                    style={{
+                      borderRadius: isCamera ? "50%" : "18px",
+                      background: isCamera
+                        ? "rgba(35,105,55,0.68)"
+                        : "rgba(20,50,30,0.22)",
+                      backdropFilter: "blur(24px) saturate(180%)",
+                      WebkitBackdropFilter: "blur(24px) saturate(180%)",
+                      border: "1px solid rgba(255,255,255,0.3)",
+                      boxShadow: isCamera
+                        ? [
+                            "0 6px 20px rgba(30,90,50,0.45)",
+                            "inset 0 1.5px 0 rgba(255,255,255,0.45)",
+                            "inset 0 -1px 0 rgba(0,0,0,0.12)",
+                          ].join(", ")
+                        : [
+                            "inset 0 1px 0 rgba(255,255,255,0.5)",
+                            "0 4px 12px rgba(0,0,0,0.1)",
+                          ].join(", "),
                     }}
-                    whileTap={{ scale: 0.88 }}
-                    transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                  >
-                    <Icon size={22} />
-                  </motion.div>
-                </button>
-              );
-            })}
-          </div>
+                    transition={{
+                      type: "spring",
+                      stiffness: 380,
+                      damping: 30,
+                    }}
+                  />
+                )}
+
+                <motion.div
+                  className="relative z-10 flex items-center justify-center"
+                  animate={{
+                    color: active
+                      ? isCamera
+                        ? "rgba(255,255,255,0.93)"
+                        : "rgb(var(--glass-text) / 0.9)"
+                      : "rgba(100,130,108,0.7)",
+                    scale: active ? 1 : 0.95,
+                  }}
+                  whileTap={{ scale: 0.88 }}
+                  transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                >
+                  <Icon size={22} />
+                </motion.div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -12,7 +12,8 @@ import {
   AlertTriangle,
   RotateCcw,
 } from "lucide-react";
-import { CROP_LIST, DIAGNOSIS_RECORDS } from "@/lib/data/mockData";
+import { DIAGNOSIS_RECORDS } from "@/lib/data/mockData";
+import { useCrops } from "@/lib/queries/useCrops";
 
 type Stage = "ready" | "captured" | "analyzing" | "quick_result" | "complete";
 
@@ -26,6 +27,7 @@ export default function DiagnosisPage() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [timeStr, setTimeStr] = useState("");
 
+  const { data: crops } = useCrops();
   const mockRecord = DIAGNOSIS_RECORDS[0];
 
   useEffect(() => {
@@ -162,25 +164,25 @@ export default function DiagnosisPage() {
             className="glass-card-strong absolute top-12 left-5 rounded-xl overflow-hidden z-30"
             style={{ width: "200px" }}
           >
-            {CROP_LIST.map((crop) => (
+            {(crops ?? []).map((crop) => (
               <button
-                key={crop}
+                key={crop.id}
                 onClick={() => {
-                  setSelectedCrop(crop);
+                  setSelectedCrop(crop.name);
                   setShowCropDropdown(false);
                 }}
                 className="glass-row w-full flex items-center justify-between px-4 py-3"
                 style={{
                   fontSize: "14px",
                   color:
-                    crop === selectedCrop
+                    crop.name === selectedCrop
                       ? "#2D7A3E"
                       : "rgb(var(--glass-text) / 0.8)",
                   borderBottom: "1px solid rgb(var(--glass-accent) / 0.1)",
                 }}
               >
-                {crop}
-                {crop === selectedCrop && (
+                {crop.name}
+                {crop.name === selectedCrop && (
                   <Check size={14} style={{ color: "#2D7A3E" }} />
                 )}
               </button>

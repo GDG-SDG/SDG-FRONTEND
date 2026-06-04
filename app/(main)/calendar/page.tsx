@@ -2,19 +2,11 @@
 
 import { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Droplets,
-  Thermometer,
-  CloudRain,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import {
-  DIAGNOSIS_RECORDS,
-  getSeverityColor,
-  Severity,
-} from "@/lib/data/mockData";
+import { getSeverityColor } from "@/lib/data/mockData";
+import type { Severity } from "@/lib/types/common";
+import { useCalendarByDate, useCalendarMonth } from "@/lib/queries/useCalendar";
 
 const TODAY = new Date();
 
@@ -56,96 +48,41 @@ export default function CalendarPage() {
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
 
-  const getDiagnosesForDate = (dateStr: string) =>
-    DIAGNOSIS_RECORDS.filter((r) => r.date === dateStr);
-  const getDotsForDate = (dateStr: string) =>
-    getDiagnosesForDate(dateStr).map((r) => r.primarySeverity);
+  const { data: monthData } = useCalendarMonth(year, month + 1);
+  const { data: selectedDiagnosesData } = useCalendarByDate(selectedDate);
+  const selectedDiagnoses = selectedDiagnosesData ?? [];
 
-  const monthlyStats = useMemo(() => {
-    const stats: Record<
-      number,
-      { 심각: number; 보통: number; 경미: number; 총진단: number }
-    > = {};
-    for (let day = 1; day <= daysInMonth; day++) {
-      stats[day] = { 심각: 0, 보통: 0, 경미: 0, 총진단: 0 };
-    }
-    DIAGNOSIS_RECORDS.forEach((record) => {
-      const d = new Date(record.date);
-      if (d.getFullYear() === year && d.getMonth() === month) {
-        const day = d.getDate();
-        if (stats[day]) {
-          stats[day][record.primarySeverity]++;
-          stats[day].총진단++;
-        }
-      }
-    });
-    return Object.entries(stats)
-      .filter(([, data]) => data.총진단 > 0)
-      .map(([day, data]) => ({
-        id: `${year}-${month + 1}-${day}`,
-        날짜: `${month + 1}/${day}`,
-        심각: data.심각,
-        보통: data.보통,
-        경미: data.경미,
-      }));
-  }, [year, month, daysInMonth]);
+  const getDotsForDate = (dateStr: string): Severity[] => {
+    const day = (monthData ?? []).find((d) => d.date === dateStr);
+    if (!day) return [];
+    return [
+      ...Array<Severity>(day.severeCount).fill("심각"),
+      ...Array<Severity>(day.moderateCount).fill("보통"),
+      ...Array<Severity>(day.mildCount).fill("경미"),
+    ];
+  };
 
-  const selectedDiagnoses = selectedDate
-    ? getDiagnosesForDate(selectedDate)
-    : [];
-  const selectedWeather = selectedDate
-    ? (selectedDiagnoses[0]?.weather ?? null)
-    : null;
+  const monthlyStats = useMemo(
+    () =>
+      (monthData ?? [])
+        .filter((d) => d.count > 0)
+        .map((d) => {
+          const [, m, day] = d.date.split("-");
+          return {
+            id: d.date,
+            날짜: `${Number(m)}/${Number(day)}`,
+            심각: d.severeCount,
+            보통: d.moderateCount,
+            경미: d.mildCount,
+          };
+        }),
+    [monthData],
+  );
 
   const formatMonthKr = () => `${year}년 ${month + 1}월`;
 
   return (
     <div className="flex flex-col h-full overflow-y-auto pb-4">
-      {/* Weather info */}
-      {selectedWeather && (
-        <div className="mx-4 mt-3 mb-3">
-          <div className="glass-card-strong rounded-xl p-3 flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <Thermometer size={14} style={{ color: "#1565C0" }} />
-              <span
-                style={{ fontSize: "13px", fontWeight: 600, color: "#1565C0" }}
-              >
-                {selectedWeather.temp}°C
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Droplets size={14} style={{ color: "#1976D2" }} />
-              <span
-                style={{ fontSize: "13px", fontWeight: 600, color: "#1976D2" }}
-              >
-                습도 {selectedWeather.humidity}%
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CloudRain size={14} style={{ color: "#0D47A1" }} />
-              <span
-                style={{ fontSize: "13px", fontWeight: 600, color: "#0D47A1" }}
-              >
-                강수 {selectedWeather.precipitation}mm
-              </span>
-            </div>
-            {selectedWeather.humidity > 75 && (
-              <div
-                className="ml-auto px-2 py-0.5 rounded-full"
-                style={{
-                  backgroundColor: "#FFF3E0",
-                  color: "#FF6B35",
-                  fontSize: "10px",
-                  fontWeight: 700,
-                }}
-              >
-                ⚠ 고습도
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Calendar */}
       <div className="glass-card-strong mx-4 rounded-2xl overflow-hidden">
         {/* Month nav */}
@@ -330,8 +267,7 @@ export default function CalendarPage() {
               {selectedDiagnoses.length > 0 ? (
                 <div className="p-3">
                   {selectedDiagnoses.map((rec) => {
-                    const top = rec.results[0];
-                    const colors = getSeverityColor(rec.primarySeverity);
+                    const colors = getSeverityColor(rec.severity);
                     return (
                       <div
                         key={rec.id}
@@ -344,7 +280,7 @@ export default function CalendarPage() {
                         <div className="relative w-16 h-16 flex-shrink-0">
                           <Image
                             src={rec.imageUrl}
-                            alt={rec.crop}
+                            alt={rec.cropName}
                             fill
                             className="rounded-xl object-cover"
                             sizes="64px"
@@ -359,7 +295,7 @@ export default function CalendarPage() {
                                 color: "#1a1a1a",
                               }}
                             >
-                              {top.diseaseKr}
+                              {rec.diseaseName}
                             </span>
                             <span
                               className="px-2 py-0.5 rounded-full"
@@ -370,7 +306,7 @@ export default function CalendarPage() {
                                 fontWeight: 700,
                               }}
                             >
-                              {rec.primarySeverity}
+                              {rec.severity}
                             </span>
                           </div>
                           <p
@@ -380,7 +316,7 @@ export default function CalendarPage() {
                               marginBottom: "4px",
                             }}
                           >
-                            {rec.crop} · 신뢰도 {top.confidence}% ·{" "}
+                            {rec.cropName} · 신뢰도 {rec.confidence}% ·{" "}
                             {rec.location}
                           </p>
                           <div
@@ -390,7 +326,7 @@ export default function CalendarPage() {
                             <div
                               className="h-full rounded-full"
                               style={{
-                                width: `${top.confidence}%`,
+                                width: `${rec.confidence}%`,
                                 backgroundColor: colors.dot,
                               }}
                             />

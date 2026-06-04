@@ -11,24 +11,36 @@ import {
   ChevronDown,
   X,
 } from "lucide-react";
-import { DIAGNOSIS_RECORDS, getSeverityColor } from "@/lib/data/mockData";
+import { getSeverityColor } from "@/lib/data/mockData";
 import { DiagnosisCard } from "@/components/dashboard/DiagnosisCard";
+import {
+  useDiagnoses,
+  useDiagnosisDetail,
+  useSimilarCases,
+  useUpdateTreatmentStatus,
+} from "@/lib/queries/useDiagnoses";
+import { useCrops } from "@/lib/queries/useCrops";
 
 type FilterSeverity = "전체" | "심각" | "보통" | "경미";
-type FilterCrop = "전체" | "고추" | "토마토" | "딸기" | "오이";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [filterSeverity, setFilterSeverity] = useState<FilterSeverity>("전체");
-  const [filterCrop, setFilterCrop] = useState<FilterCrop>("전체");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [filterCrop, setFilterCrop] = useState<string>("전체");
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [showSeverityDropdown, setShowSeverityDropdown] = useState(false);
   const [showCropDropdown, setShowCropDropdown] = useState(false);
 
-  const filtered = DIAGNOSIS_RECORDS.filter((r) => {
-    const sev =
-      filterSeverity === "전체" || r.primarySeverity === filterSeverity;
-    const crop = filterCrop === "전체" || r.crop === filterCrop;
+  const { data, isLoading, isError } = useDiagnoses();
+  const { data: crops } = useCrops();
+  const { data: detail } = useDiagnosisDetail(selectedId);
+  const cropFilterOptions = ["전체", ...(crops ?? []).map((c) => c.name)];
+  const { data: similarCases } = useSimilarCases(selectedId);
+  const updateStatus = useUpdateTreatmentStatus();
+
+  const filtered = (data?.content ?? []).filter((r) => {
+    const sev = filterSeverity === "전체" || r.severity === filterSeverity;
+    const crop = filterCrop === "전체" || r.cropName === filterCrop;
     return sev && crop;
   });
 
@@ -136,9 +148,7 @@ export default function DashboardPage() {
               </button>
               {showCropDropdown && (
                 <div className="glass-card-strong absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden z-10">
-                  {(
-                    ["전체", "고추", "토마토", "딸기", "오이"] as FilterCrop[]
-                  ).map((c) => (
+                  {cropFilterOptions.map((c) => (
                     <button
                       key={c}
                       onClick={() => {
@@ -168,7 +178,27 @@ export default function DashboardPage() {
 
         {/* Cards */}
         <div className="px-5 pb-4 flex flex-col gap-3">
-          {filtered.length === 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <p
+                style={{ fontSize: "15px", color: "#9E9E9E", fontWeight: 500 }}
+              >
+                진단 기록을 불러오는 중...
+              </p>
+            </div>
+          ) : isError ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Info
+                size={40}
+                style={{ color: "#F44336", marginBottom: "12px" }}
+              />
+              <p
+                style={{ fontSize: "15px", color: "#9E9E9E", fontWeight: 500 }}
+              >
+                기록을 불러오지 못했습니다
+              </p>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
               <Info
                 size={40}
@@ -196,12 +226,11 @@ export default function DashboardPage() {
       </div>
 
       {/* Detail modal */}
-      {selectedId &&
+      {selectedId !== null &&
+        detail &&
         (() => {
-          const record = DIAGNOSIS_RECORDS.find((r) => r.id === selectedId);
-          if (!record) return null;
-          const topResult = record.results[0];
-          const colors = getSeverityColor(record.primarySeverity);
+          const topResult = detail.results[0];
+          const colors = getSeverityColor(detail.severity);
 
           return (
             <div
@@ -235,7 +264,7 @@ export default function DashboardPage() {
                         color: colors.text,
                       }}
                     >
-                      {topResult.diseaseKr} - {record.primarySeverity}
+                      {topResult.diseaseNameKr} - {detail.severity}
                     </p>
                     <p
                       style={{
@@ -244,8 +273,8 @@ export default function DashboardPage() {
                         opacity: 0.8,
                       }}
                     >
-                      신뢰도 {topResult.confidence}% · {record.crop} ·{" "}
-                      {record.location}
+                      신뢰도 {topResult.confidence}% · {detail.cropName} ·{" "}
+                      {detail.location}
                     </p>
                   </div>
                   <button
@@ -298,47 +327,36 @@ export default function DashboardPage() {
                       📊 최근 유사 사례
                     </h4>
                     <div className="space-y-2">
-                      {[
-                        {
-                          region: "경기 여주시",
-                          env: "비닐하우스, 습도 85%, 온도 28°C",
-                          severity: "#F44336",
-                        },
-                        {
-                          region: "충남 천안시",
-                          env: "노지 재배, 장마 기간, 습도 90%",
-                          severity: "#F44336",
-                        },
-                        {
-                          region: "경기 용인시",
-                          env: "시설재배, 통풍 불량, 밀식 환경",
-                          severity: "#FFC107",
-                        },
-                        {
-                          region: "강원 홍천군",
-                          env: "노지 재배, 습도 75%, 조기 예방 살포",
-                          severity: "#4CAF50",
-                        },
-                      ].map((item, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <div
-                            className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0"
-                            style={{ backgroundColor: item.severity }}
-                          />
-                          <p
-                            style={{
-                              fontSize: "11px",
-                              color: "#616161",
-                              lineHeight: 1.5,
-                            }}
-                          >
-                            <strong style={{ color: "#333" }}>
-                              {item.region}
-                            </strong>{" "}
-                            · {item.env}
-                          </p>
-                        </div>
-                      ))}
+                      {(similarCases ?? []).length === 0 ? (
+                        <p style={{ fontSize: "11px", color: "#9E9E9E" }}>
+                          유사 사례가 없습니다
+                        </p>
+                      ) : (
+                        (similarCases ?? []).map((item) => (
+                          <div key={item.id} className="flex items-start gap-2">
+                            <div
+                              className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0"
+                              style={{
+                                backgroundColor: getSeverityColor(item.severity)
+                                  .dot,
+                              }}
+                            />
+                            <p
+                              style={{
+                                fontSize: "11px",
+                                color: "#616161",
+                                lineHeight: 1.5,
+                              }}
+                            >
+                              <strong style={{ color: "#333" }}>
+                                {item.location}
+                              </strong>{" "}
+                              · {item.cropName} · 습도 {item.weather.humidity}%
+                              · 온도 {item.weather.temperature}°C
+                            </p>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
 
@@ -354,8 +372,11 @@ export default function DashboardPage() {
                       💊 회복 및 방제 방법
                     </h4>
                     <div className="space-y-2">
-                      {topResult.treatmentSteps.map((step, i) => (
-                        <div key={i} className="flex items-start gap-2">
+                      {topResult.treatmentSteps.map((step) => (
+                        <div
+                          key={step.stepOrder}
+                          className="flex items-start gap-2"
+                        >
                           <div
                             className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
                             style={{
@@ -365,17 +386,40 @@ export default function DashboardPage() {
                               color: "white",
                             }}
                           >
-                            {i + 1}
+                            {step.stepOrder}
                           </div>
-                          <p
-                            style={{
-                              fontSize: "11px",
-                              color: "#333",
-                              lineHeight: 1.6,
-                            }}
-                          >
-                            {step}
-                          </p>
+                          <div className="flex-1">
+                            <p
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: 700,
+                                color: "#1a1a1a",
+                                lineHeight: 1.6,
+                              }}
+                            >
+                              {step.title}
+                            </p>
+                            <p
+                              style={{
+                                fontSize: "11px",
+                                color: "#333",
+                                lineHeight: 1.6,
+                              }}
+                            >
+                              {step.description}
+                            </p>
+                            {step.chemical && (
+                              <p
+                                style={{
+                                  fontSize: "10px",
+                                  color: "#FF6B35",
+                                  marginTop: "2px",
+                                }}
+                              >
+                                💊 {step.chemical}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -392,12 +436,43 @@ export default function DashboardPage() {
                 </div>
 
                 <div
-                  className="px-4 py-3 flex-shrink-0"
+                  className="px-4 py-3 flex-shrink-0 flex flex-col gap-2"
                   style={{
                     backgroundColor: "#FAFAFA",
                     borderTop: "1px solid #F0F0F0",
                   }}
                 >
+                  {(() => {
+                    const isDone = detail.treatmentStatus === "방제 완료";
+                    return (
+                      <button
+                        onClick={() =>
+                          updateStatus.mutate({
+                            id: detail.id,
+                            treatmentStatus: isDone ? "방제 필요" : "방제 완료",
+                          })
+                        }
+                        disabled={updateStatus.isPending}
+                        className="w-full py-3 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
+                        style={{
+                          backgroundColor: isDone ? "#E8F5E9" : "white",
+                          color: "#2D7A3E",
+                          border: "1.5px solid #2D7A3E",
+                          fontSize: "14px",
+                          fontWeight: 700,
+                          opacity: updateStatus.isPending ? 0.6 : 1,
+                        }}
+                      >
+                        {isDone ? (
+                          <>
+                            <CheckCircle size={16} /> 방제 완료됨
+                          </>
+                        ) : (
+                          "방제 완료로 표시"
+                        )}
+                      </button>
+                    );
+                  })()}
                   <button
                     onClick={() => router.push("/chat")}
                     className="w-full py-3 rounded-xl"
