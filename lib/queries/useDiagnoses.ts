@@ -51,8 +51,12 @@ export function useUpdateTreatmentStatus() {
   return useMutation({
     mutationFn: (params: { id: number; treatmentStatus: TreatmentStatus }) =>
       updateTreatmentStatus(params.id, params.treatmentStatus),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["diagnoses"] });
+    onSuccess: (_data, variables) => {
+      // 목록과 해당 상세만 갱신 (통계·유사사례는 영향 없으므로 제외)
+      queryClient.invalidateQueries({ queryKey: ["diagnoses", "list"] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.diagnosisDetail(variables.id),
+      });
     },
   });
 }

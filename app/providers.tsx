@@ -25,7 +25,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
     let active = true;
     import("@/mocks/browser")
       .then(({ startMockWorker }) => startMockWorker())
-      .then(() => {
+      .catch((e) => {
+        // 워커 시작 실패해도 앱은 렌더 (mock 없이 동작 — 빈 화면 방지)
+        console.error("[MSW] worker start failed:", e);
+      })
+      .finally(() => {
         if (active) setMockReady(true);
       });
     return () => {
