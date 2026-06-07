@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { AlertTriangle, CheckCircle, X } from "lucide-react";
 import { getSeverityColor } from "@/lib/data/mockData";
 import type { DiagnosisDetail, SimilarCase } from "@/lib/types/diagnosis";
@@ -37,6 +38,46 @@ export function DiseaseDetailModal({
   const showFooter = Boolean(onToggleTreatment || onStartChat);
   const isTreatmentDone = detail.treatmentStatus === "방제 완료";
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  // a11y: 마운트 시 포커스 이동, Esc 닫기, Tab 포커스 트랩, 언마운트 시 포커스 복원
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    dialog?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+      if (e.key === "Tab" && dialog) {
+        const focusables = dialog.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+        );
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, []);
+
   return (
     <div
       className="absolute inset-0 z-50 flex items-center justify-center p-4"
@@ -48,7 +89,12 @@ export function DiseaseDetailModal({
       onClick={onClose}
     >
       <div
-        className="w-full rounded-2xl overflow-hidden flex flex-col"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${topResult.diseaseNameKr} ${detail.severity} 상세`}
+        tabIndex={-1}
+        className="w-full rounded-2xl overflow-hidden flex flex-col focus:outline-none"
         style={{
           maxHeight: "75vh",
           maxWidth: "350px",
@@ -102,11 +148,13 @@ export function DiseaseDetailModal({
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="닫기"
             className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
             style={{ backgroundColor: "rgba(20,40,28,0.06)" }}
           >
-            <X size={16} style={{ color: "#616161" }} />
+            <X size={16} aria-hidden="true" style={{ color: "#616161" }} />
           </button>
         </div>
 
