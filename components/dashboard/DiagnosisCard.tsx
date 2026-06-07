@@ -25,10 +25,15 @@ export function DiagnosisCard({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden shadow-sm bg-white"
-      style={{ border: `1.5px solid ${selected ? "#2D7A3E" : "#F0F0F0"}` }}
+      className="rounded-2xl overflow-hidden bg-white transition-shadow"
+      style={{
+        border: `1.5px solid ${selected ? "rgb(var(--brand-green))" : "#EFEFEF"}`,
+        boxShadow: selected
+          ? "0 4px 16px rgba(45,122,62,0.12)"
+          : "0 1px 3px rgba(20,40,28,0.06)",
+      }}
     >
-      <button className="w-full text-left" onClick={onSelect}>
+      <button className="w-full min-w-0 text-left" onClick={onSelect}>
         <div className="flex gap-3 p-4">
           <div className="relative flex-shrink-0 w-20 h-20">
             <Image
@@ -50,19 +55,17 @@ export function DiagnosisCard({
             />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[11px] text-[#9E9E9E]">
-                {dateFormatted}
-              </span>
-              <span
-                className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                style={{ backgroundColor: "#E8F5E9", color: "#2D7A3E" }}
-              >
+            {/* Meta — crop demoted to neutral text so it no longer competes
+                with the severity badge */}
+            <div className="flex items-center gap-1.5 mb-1 text-[11px]">
+              <span className="font-semibold text-[#616161]">
                 {record.cropName}
               </span>
+              <span className="text-[#D0D0D0]">·</span>
+              <span className="text-[#9E9E9E]">{dateFormatted}</span>
             </div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[17px] font-extrabold text-[#1a1a1a]">
+              <span className="text-[17px] font-extrabold text-[#1a1a1a] truncate">
                 {record.diseaseName}
               </span>
               <SeverityBadge severity={record.severity} />

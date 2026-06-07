@@ -12,8 +12,11 @@ import {
   AlertTriangle,
   RotateCcw,
 } from "lucide-react";
-import { DIAGNOSIS_RECORDS } from "@/lib/data/mockData";
+import { DIAGNOSIS_RECORDS, getSeverityColor } from "@/lib/data/mockData";
 import { useCrops } from "@/lib/queries/useCrops";
+
+const BRAND_GREEN = "rgb(var(--brand-green))";
+const ACCENT_ORANGE = "rgb(var(--accent-orange))";
 
 type Stage = "ready" | "captured" | "analyzing" | "quick_result" | "complete";
 
@@ -29,6 +32,7 @@ export default function DiagnosisPage() {
 
   const { data: crops } = useCrops();
   const mockRecord = DIAGNOSIS_RECORDS[0];
+  const severityColors = getSeverityColor("심각");
 
   useEffect(() => {
     const update = () =>
@@ -408,7 +412,7 @@ export default function DiagnosisPage() {
               <div
                 className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full"
                 style={{
-                  backgroundColor: "#2D7A3E",
+                  backgroundColor: BRAND_GREEN,
                   color: "white",
                   fontSize: "12px",
                   fontWeight: 600,
@@ -427,27 +431,31 @@ export default function DiagnosisPage() {
         <div
           className="glass-card-strong mx-5 mt-3 rounded-2xl overflow-hidden flex flex-col"
           style={{
-            border: "1.5px solid #F44336",
+            border: `1.5px solid ${severityColors.dot}`,
             maxHeight: "320px",
           }}
         >
           <div
             className="flex items-center gap-2 px-4 py-3 flex-shrink-0"
-            style={{ backgroundColor: "#FFEBEE" }}
+            style={{ backgroundColor: severityColors.bg }}
           >
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: "#F44336" }}
+              style={{ backgroundColor: severityColors.dot }}
             >
               <AlertTriangle size={14} style={{ color: "white" }} />
             </div>
             <div className="flex-1">
               <p
-                style={{ fontSize: "14px", fontWeight: 700, color: "#B71C1C" }}
+                style={{
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  color: severityColors.text,
+                }}
               >
                 탄저병 (Anthracnose) - 심각
               </p>
-              <p style={{ fontSize: "11px", color: "#C62828" }}>
+              <p style={{ fontSize: "11px", color: severityColors.text }}>
                 신뢰도 92% · 고추 · 이천시
               </p>
             </div>
@@ -462,7 +470,7 @@ export default function DiagnosisPage() {
                 style={{
                   fontSize: "12px",
                   fontWeight: 700,
-                  color: "#2D7A3E",
+                  color: BRAND_GREEN,
                   marginBottom: "6px",
                 }}
               >
@@ -483,7 +491,7 @@ export default function DiagnosisPage() {
                 style={{
                   fontSize: "12px",
                   fontWeight: 700,
-                  color: "#FF6B35",
+                  color: ACCENT_ORANGE,
                   marginBottom: "6px",
                 }}
               >
@@ -537,7 +545,7 @@ export default function DiagnosisPage() {
                 style={{
                   fontSize: "12px",
                   fontWeight: 700,
-                  color: "#2D7A3E",
+                  color: BRAND_GREEN,
                   marginBottom: "6px",
                 }}
               >
@@ -554,7 +562,7 @@ export default function DiagnosisPage() {
                     <div
                       className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
                       style={{
-                        backgroundColor: "#2D7A3E",
+                        backgroundColor: BRAND_GREEN,
                         fontSize: "9px",
                         fontWeight: 700,
                         color: "white",
