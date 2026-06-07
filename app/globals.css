@@ -99,6 +99,11 @@
 :root {
   --glass-text: 20 60 35;
   --glass-accent: 45 122 62;
+
+  /* Semantic UI color tokens — use as rgb(var(--brand-green) / <alpha>) */
+  --brand-green: 45 122 62; /* #2D7A3E */
+  --accent-orange: 255 107 53; /* #FF6B35 */
+  --info-blue: 25 118 210; /* #1976D2 */
 }
 
 /* Liquid Glass tokens */

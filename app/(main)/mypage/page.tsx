@@ -187,41 +187,49 @@ export default function MyPage() {
               label: "총 진단",
               value: String(summary?.totalDiagnosisCount ?? 0),
               sub: "건",
-              color: "#2D7A3E",
-              bg: "#E8F5E9",
+              token: "--brand-green",
             },
             {
               label: "이번 달",
               value: String(summary?.monthlyDiagnosisCount ?? 0),
               sub: "건",
-              color: "#FF6B35",
-              bg: "#FFF3E0",
+              token: "--accent-orange",
             },
             {
               label: "방제 완료",
               value: String(summary?.treatmentCompletedCount ?? 0),
               sub: "건",
-              color: "#1976D2",
-              bg: "#E3F2FD",
+              token: "--info-blue",
             },
           ].map((item) => (
             <div
               key={item.label}
-              className="rounded-xl p-3 text-center"
-              style={{ backgroundColor: item.bg }}
+              className="rounded-xl px-3 py-3.5 text-center"
+              style={{ backgroundColor: `rgb(var(${item.token}) / 0.1)` }}
             >
-              <div
-                style={{ fontSize: "22px", fontWeight: 800, color: item.color }}
-              >
-                {item.value}
+              <div className="flex items-baseline justify-center gap-0.5">
+                <span
+                  style={{
+                    fontSize: "22px",
+                    fontWeight: 800,
+                    color: `rgb(var(${item.token}))`,
+                    lineHeight: 1,
+                  }}
+                >
+                  {item.value}
+                </span>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: `rgb(var(${item.token}))`,
+                  }}
+                >
+                  {item.sub}
+                </span>
               </div>
               <div
-                style={{ fontSize: "11px", color: item.color, fontWeight: 600 }}
-              >
-                {item.sub}
-              </div>
-              <div
-                style={{ fontSize: "10px", color: "#757575", marginTop: "2px" }}
+                style={{ fontSize: "11px", color: "#757575", marginTop: "4px" }}
               >
                 {item.label}
               </div>
