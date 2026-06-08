@@ -27,6 +27,7 @@
 
 - [x] `beforeinstallprompt` 기반 설치 UX — `components/pwa/InstallPrompt.tsx`, `(main)` 레이아웃 마운트. Android=설치 버튼 / iOS=수동 안내 / standalone·dismiss 시 미노출. type-check·build 통과
 - [x] 오프라인 폴백 페이지 — `app/~offline/page.tsx`, `sw.ts` `fallbacks.entries`(document matcher) + `next.config` `additionalPrecacheEntries`로 문서 precache. 빌드 매니페스트에 `/~offline` 문서 포함 검증
+- [x] 앱 바로가기(manifest `shortcuts`) — 진단(/diagnosis)·챗봇(/chat)·캘린더(/calendar) 3종. 런타임 manifest 서빙 검증
 
 ### 🚧 진행 중
 

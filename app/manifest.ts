@@ -34,5 +34,29 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: "maskable",
       },
     ],
+    // 설치된 앱 아이콘 길게 누르면 노출되는 빠른 진입점
+    shortcuts: [
+      {
+        name: "작물 진단하기",
+        short_name: "진단",
+        description: "사진으로 작물 질병을 진단합니다",
+        url: "/diagnosis",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
+      },
+      {
+        name: "AI 챗봇 상담",
+        short_name: "챗봇",
+        description: "방제·재배 질문을 AI에게 물어보세요",
+        url: "/chat",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
+      },
+      {
+        name: "방제 캘린더",
+        short_name: "캘린더",
+        description: "방제 일정을 확인합니다",
+        url: "/calendar",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
+      },
+    ],
   };
 }
