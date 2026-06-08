@@ -1,4 +1,5 @@
 // fetch 기반 API 클라이언트 — axios 미사용 (의존성 0)
+import { getAccessToken } from "@/lib/auth/token";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
@@ -29,13 +30,14 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const { body, headers, ...rest } = options;
   const isFormData = body instanceof FormData;
+  const accessToken = getAccessToken();
 
   const res = await fetch(`${BASE_URL}${path}`, {
     ...rest,
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       ...headers,
-      // 인증 도입 시 여기에 Authorization 주입
     },
     body: isFormData
       ? body
