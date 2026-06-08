@@ -25,6 +25,10 @@ const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
   disable: isDev || useMock,
+  // 오프라인 폴백 문서를 precache에 명시적으로 포함한다.
+  // (App Router는 HTML 문서를 빌드 매니페스트에 넣지 않으므로 직접 추가)
+  // 폴백 페이지 내용을 바꾸면 revision도 함께 올려 캐시를 갱신한다.
+  additionalPrecacheEntries: [{ url: "/~offline", revision: "offline-v1" }],
 });
 
 export default withSerwist(nextConfig);

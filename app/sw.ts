@@ -19,6 +19,17 @@ const serwist = new Serwist({
   navigationPreload: true,
   // 정적 자산 기본 캐싱 전략. API 캐싱은 백엔드 확정 후 별도 작업에서 추가한다.
   runtimeCaching: defaultCache,
+  // 네트워크 단절 시 문서(페이지) 요청에 오프라인 폴백 페이지를 제공한다.
+  fallbacks: {
+    entries: [
+      {
+        url: "/~offline",
+        matcher({ request }) {
+          return request.destination === "document";
+        },
+      },
+    ],
+  },
 });
 
 serwist.addEventListeners();

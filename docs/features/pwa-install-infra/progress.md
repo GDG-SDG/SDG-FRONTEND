@@ -4,8 +4,8 @@
 
 - 이슈: #9 (Feat)
 - 브랜치: feature/9-pwa-install-infra
-- 단계: Phase 1 시작
-- 마지막 업데이트: 2026-06-07 (start 실행)
+- 단계: 1단계(설치 인프라) 구현·런타임 검증 완료
+- 마지막 업데이트: 2026-06-08 (런타임 검증)
 
 ---
 
@@ -26,6 +26,7 @@
 - [x] prod 빌드 검증 — USE_MOCK=false 시 `public/sw.js`(54KB) 생성 + `/manifest.webmanifest` 라우트, type-check 클린
 
 - [x] `beforeinstallprompt` 기반 설치 UX — `components/pwa/InstallPrompt.tsx`, `(main)` 레이아웃 마운트. Android=설치 버튼 / iOS=수동 안내 / standalone·dismiss 시 미노출. type-check·build 통과
+- [x] 오프라인 폴백 페이지 — `app/~offline/page.tsx`, `sw.ts` `fallbacks.entries`(document matcher) + `next.config` `additionalPrecacheEntries`로 문서 precache. 빌드 매니페스트에 `/~offline` 문서 포함 검증
 
 ### 🚧 진행 중
 
@@ -38,6 +39,7 @@
 - [2026-06-07] 아이콘은 플레이스홀더로 시작
 - [2026-06-07] **SW 충돌 회피**: MSW 워커와 PWA 워커 모두 루트 스코프(/)라 동시 등록 불가 → mock 모드(USE_MOCK!=false)에서는 PWA SW 비활성. 백엔드 연동(USE_MOCK=false) 시 PWA SW 활성. manifest/아이콘은 항상 제공되어 설치는 mock 모드에서도 동작.
 - [2026-06-07] sw.ts는 `/// <reference lib="webworker" />`로 webworker 타입만 국소 적용 (전역 tsconfig는 dom 유지)
+- [2026-06-08] 오프라인 폴백: App Router는 HTML 문서를 precache 매니페스트에 자동 포함하지 않아(`__SW_MANIFEST`엔 JS/CSS/media만), 폴백 문서(`/~offline`)는 `additionalPrecacheEntries`로 직접 precache. 폴백 페이지 수정 시 `revision`(현재 `offline-v1`) 동반 증가 필요. 라우트는 literal `/~offline`로만 매칭(URL 인코딩 `%7E`는 404).
 
 ### 🐛 트러블슈팅
 
@@ -45,10 +47,48 @@
 
 ### ⏭️ 남은 작업
 
-- [ ] `app/manifest.ts` 생성 (앱 이름, 아이콘, theme_color, display: standalone)
-- [ ] 아이콘 세트 구성 — 192/512 + maskable, apple-touch-icon (플레이스홀더)
-- [ ] `app/layout.tsx`에 themeColor / appleWebApp 메타 추가
-- [ ] `app/sw.ts` 서비스워커 — 정적 자산 precache
-- [ ] MSW와 PWA SW 환경 분리 보장 (dev=MSW, prod=Serwist)
-- [ ] (선택) `beforeinstallprompt` 기반 설치 UX
-- [ ] 검증: `npm run build && npm start`로 설치 가능 여부 / Lighthouse PWA 체크
+- [ ] 브라우저 실측 — Lighthouse PWA / 실제 설치 동작 (배포 또는 백엔드 연동 시점 권장)
+- [ ] 플레이스홀더 아이콘 → 실제 브랜드 로고 교체
+- [ ] (후속 이슈) API 응답 캐싱·오프라인 — 백엔드 API 확정 후
+- [ ] (후속 이슈) Capacitor 앱스토어 래핑
+
+### Commit — 2026-06-07
+
+- Hash: `0888afa`
+- Message: `Feat:#9 PWA 설치 인프라 구축`
+- Issue: `#9`
+
+**변경 요약**
+
+- Serwist 도입(next.config withSerwist), manifest.ts / sw.ts(정적 precache) 추가
+- layout 메타(manifest·appleWebApp·viewport.themeColor) + 플레이스홀더 아이콘 4종
+- InstallPrompt 컴포넌트((main) 레이아웃 마운트) — Android 설치 버튼 / iOS 수동 안내
+- sw.js 빌드 산출물 .gitignore 처리
+
+**결정 로그**
+
+- mock 모드에서는 PWA SW 비활성(`disable: isDev || useMock`) — MSW와 SW 스코프 충돌 회피
+- 이번 커밋은 `Refs #9` (PR 머지 시 Closes 예정)
+- `docs/pilot-metrics/`는 PWA 무관 → 커밋에서 제외
+
+**다음 작업**
+
+- 런타임 검증 (npm start)
+
+### 런타임 검증 — 2026-06-08
+
+`NEXT_PUBLIC_USE_MOCK=false` prod 빌드 → `npm start`(:3100)로 산출물 서빙 확인.
+
+| 항목                    | 결과                                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------------------- |
+| `/manifest.webmanifest` | HTTP 200, `application/manifest+json`, JSON 정상(theme #2D7A3E, standalone, 아이콘 3종)      |
+| `/sw.js`                | HTTP 200, `application/javascript`, 54,974 bytes, Serwist 번들 확인                          |
+| `/icons/*.png` (4종)    | 전부 HTTP 200, `image/png`                                                                   |
+| HTML `<head>`           | manifest 링크 / `theme-color` / `apple-mobile-web-app-*` / `apple-touch-icon` 메타 주입 확인 |
+
+**한계**: GUI 브라우저 Lighthouse·실제 설치 프롬프트는 headless로 검증 불가 → 배포/실기기에서 별도 확인 필요.
+
+**다음 작업**
+
+- 실제 브랜드 로고로 아이콘 교체 (자산 준비 시)
+- 배포 후 실기기 설치/Lighthouse 확인
