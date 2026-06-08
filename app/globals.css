@@ -95,6 +95,11 @@
   border-color: #2d7a3e !important;
 }
 
+.auth-input:focus {
+  border-color: #2d7a3e !important;
+  box-shadow: 0 0 0 3px rgba(45, 122, 62, 0.12);
+}
+
 /* Liquid Glass color tokens — use as rgb(var(--glass-text) / <alpha>) */
 :root {
   --glass-text: 20 60 35;

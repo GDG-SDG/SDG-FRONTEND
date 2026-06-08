@@ -30,8 +30,20 @@ import {
   MOCK_NOTIFICATION_SETTINGS,
 } from "@/lib/data/mock/user";
 import { MOCK_CROPS } from "@/lib/data/mock/crop";
+import {
+  MOCK_LOGIN_RESPONSE,
+  MOCK_SIGNUP_RESPONSE,
+} from "@/lib/data/mock/auth";
 
 export const handlers = [
+  // ---- 인증 ----
+  http.post("*/auth/signup", () => HttpResponse.json(MOCK_SIGNUP_RESPONSE)),
+  http.post("*/auth/login", () => HttpResponse.json(MOCK_LOGIN_RESPONSE)),
+  http.post("*/auth/logout", () => HttpResponse.json({ loggedOut: true })),
+  http.post("*/auth/refresh", () =>
+    HttpResponse.json({ accessToken: MOCK_LOGIN_RESPONSE.accessToken }),
+  ),
+
   // ---- 캘린더 (diagnoses 와일드카드보다 먼저) ----
   http.get("*/calendar/diagnoses/:date", ({ params }) =>
     HttpResponse.json(getMockCalendarByDate(String(params.date))),
