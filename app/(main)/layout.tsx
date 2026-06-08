@@ -10,6 +10,7 @@ import {
   User,
 } from "lucide-react";
 import { useCallback } from "react";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 
 const NAV_ITEMS = [
   { path: "/dashboard", icon: LayoutDashboard },
@@ -34,6 +35,9 @@ export default function MainLayout({
       className="page-bg relative flex flex-col overflow-hidden"
       style={{ height: "100dvh" }}
     >
+      {/* PWA 설치 유도 배너 (상단 슬라이드인) */}
+      <InstallPrompt />
+
       {/* Main content */}
       <div
         className="flex-1 overflow-y-auto"
