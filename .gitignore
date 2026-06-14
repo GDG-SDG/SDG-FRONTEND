@@ -44,3 +44,6 @@ next-env.d.ts
 
 # oh-my-claudecode
 .omc/
+
+# pilot metrics (세션별 메트릭 덤프 — 로컬 전용)
+docs/pilot-metrics/

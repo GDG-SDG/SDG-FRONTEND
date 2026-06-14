@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   User,
   Mail,
@@ -17,6 +18,7 @@ import {
 import dynamic from "next/dynamic";
 import { useMypage, useMypageSummary } from "@/lib/queries/useUser";
 import { useMonthlyStats } from "@/lib/queries/useDiagnoses";
+import { useLogout } from "@/lib/queries/useAuth";
 import {
   NotificationSettingsModal,
   ProfileEditModal,
@@ -92,6 +94,15 @@ export default function MyPage() {
   const { data: monthlyStats } = useMonthlyStats(year);
 
   const [activeModal, setActiveModal] = useState<AccountModal | null>(null);
+
+  const router = useRouter();
+  const logoutMutation = useLogout();
+  const handleLogout = () => {
+    // 토큰 정리는 useLogout 훅의 onSettled가 담당하고, 여기선 네비게이션만 처리한다.
+    logoutMutation.mutate(undefined, {
+      onSettled: () => router.replace("/login"),
+    });
+  };
 
   const chartData = (monthlyStats ?? []).map((s) => ({
     월: `${s.month}월`,
@@ -338,12 +349,14 @@ export default function MyPage() {
       {/* Logout */}
       <div className="mx-4 mt-3">
         <button
-          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl"
+          onClick={handleLogout}
+          disabled={logoutMutation.isPending}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl disabled:opacity-60"
           style={{ backgroundColor: "#FFEBEE", border: "1px solid #FFCDD2" }}
         >
           <LogOut size={18} style={{ color: "#F44336" }} />
           <span style={{ fontSize: "15px", fontWeight: 700, color: "#F44336" }}>
-            로그아웃
+            {logoutMutation.isPending ? "로그아웃 중..." : "로그아웃"}
           </span>
         </button>
         <button

@@ -7,7 +7,7 @@ import type {
 
 /** GET /users/mypage */
 export const MOCK_MYPAGE: Mypage = {
-  id: 1,
+  id: "00000000-0000-0000-0000-000000000001",
   name: "김농부",
   email: "farmer.kim@example.com",
   phone: "010-1234-5678",

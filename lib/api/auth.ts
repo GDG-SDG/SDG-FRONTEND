@@ -3,8 +3,6 @@ import { apiFetch } from "./client";
 import type {
   LoginRequest,
   LoginResponse,
-  LogoutResponse,
-  RefreshRequest,
   RefreshResponse,
   SignupRequest,
   SignupResponse,
@@ -26,17 +24,16 @@ export async function login(body: LoginRequest): Promise<LoginResponse> {
   });
 }
 
-/** POST /auth/logout — 로그아웃 */
-export async function logout(): Promise<LogoutResponse> {
-  return apiFetch<LogoutResponse>("/auth/logout", {
+/** POST /auth/logout — 로그아웃 (204 No Content) */
+export async function logout(): Promise<void> {
+  await apiFetch<void>("/auth/logout", {
     method: "POST",
   });
 }
 
-/** POST /auth/refresh — 토큰 재발급 */
-export async function refresh(body: RefreshRequest): Promise<RefreshResponse> {
+/** POST /auth/refresh — 토큰 재발급 (refreshToken은 쿠키에서 읽음, body 없음) */
+export async function refresh(): Promise<RefreshResponse> {
   return apiFetch<RefreshResponse>("/auth/refresh", {
     method: "POST",
-    body,
   });
 }

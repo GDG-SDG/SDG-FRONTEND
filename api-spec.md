@@ -4,41 +4,40 @@
 
 ## API 구현 현황
 
-> 전체 25개 엔드포인트 중 **19개 구현 완료** (76%)
+> 전체 25개 엔드포인트 중 **23개 구현 완료** (92%)
 
-| #   | 도메인 | Method   | URL                                | 설명                         | 구현 | 비고                     |
-| --- | ------ | -------- | ---------------------------------- | ---------------------------- | :--: | ------------------------ |
-| 1   | 인증   | `POST`   | `/auth/signup`                     | 회원가입                     |      | JWT 연동 필요            |
-| 2   | 인증   | `POST`   | `/auth/login`                      | 로그인                       |      | JWT 연동 필요            |
-| 3   | 인증   | `POST`   | `/auth/logout`                     | 로그아웃                     |      | JWT 연동 필요            |
-| 4   | 인증   | `POST`   | `/auth/refresh`                    | 토큰 재발급                  |      | JWT 연동 필요            |
-| 5   | 사용자 | `GET`    | `/users/mypage`                    | 내 정보 조회                 |  O   |                          |
-| 6   | 사용자 | `PATCH`  | `/users/mypage`                    | 내 정보 수정                 |  O   |                          |
-| 7   | 사용자 | `PATCH`  | `/users/password`                  | 비밀번호 변경                |  O   |                          |
-| 8   | 사용자 | `DELETE` | `/users`                           | 회원 탈퇴                    |  O   |                          |
-| 9   | 사용자 | `GET`    | `/users/mypage/summary`            | 마이페이지 통계              |  O   |                          |
-| 10  | 사용자 | `GET`    | `/users/notification-settings`     | 알림 설정 조회               |  O   |                          |
-| 11  | 사용자 | `PATCH`  | `/users/notification-settings`     | 알림 설정 수정               |  O   |                          |
-| 12  | 작물   | `GET`    | `/crops`                           | 작물 목록 조회               |  O   |                          |
-| 13  | 진단   | `POST`   | `/diagnoses`                       | 이미지 진단 요청             |      | AI 모델 연동 필요        |
-| 14  | 기록   | `GET`    | `/diagnoses`                       | 진단 기록 목록 (필터+페이징) |  O   |                          |
-| 15  | 기록   | `GET`    | `/diagnoses/{id}`                  | 진단 상세 조회               |  O   |                          |
-| 16  | 기록   | `PATCH`  | `/diagnoses/{id}/treatment-status` | 방제 상태 변경               |  O   |                          |
-| 17  | 기록   | `GET`    | `/diagnoses/{id}/similar-cases`    | 유사 사례 조회               |  O   |                          |
-| 18  | 캘린더 | `GET`    | `/calendar/diagnoses`              | 월별 캘린더 기록             |  O   |                          |
-| 19  | 캘린더 | `GET`    | `/calendar/diagnoses/{date}`       | 특정 날짜 기록               |  O   |                          |
-| 20  | 통계   | `GET`    | `/diagnoses/stats/monthly`         | 월별 통계                    |  O   |                          |
-| 21  | 기상   | `GET`    | `/weather/{city}/{district}`       | 지역별 기상 조회             |      | 기상청 API 연동 필요     |
-| 22  | 챗봇   | `POST`   | `/chat/sessions`                   | 채팅 세션 생성               |  O   |                          |
-| 23  | 챗봇   | `GET`    | `/chat/sessions`                   | 세션 목록 조회               |  O   |                          |
-| 24  | 챗봇   | `GET`    | `/chat/sessions/{id}/messages`     | 채팅 이력 조회               |  O   |                          |
-| 25  | 챗봇   | `POST`   | `/chat/sessions/{id}/messages`     | 메시지 전송                  |  O   | AI 응답 생성은 추후 연동 |
+| #   | 도메인 | Method   | URL                                | 설명                         | 구현 | 비고                                     |
+| --- | ------ | -------- | ---------------------------------- | ---------------------------- | :--: | ---------------------------------------- |
+| 1   | 인증   | `POST`   | `/auth/signup`                     | 회원가입                     |  O   | refreshToken은 HttpOnly Cookie로 전달    |
+| 2   | 인증   | `POST`   | `/auth/login`                      | 로그인                       |  O   | accessToken만 Body, refreshToken은 쿠키  |
+| 3   | 인증   | `POST`   | `/auth/logout`                     | 로그아웃                     |  O   | 204 No Content 반환                      |
+| 4   | 인증   | `POST`   | `/auth/refresh`                    | 토큰 재발급                  |  O   | refreshToken 쿠키에서 읽고 쿠키로 재발급 |
+| 5   | 사용자 | `GET`    | `/users/mypage`                    | 내 정보 조회                 |  O   |                                          |
+| 6   | 사용자 | `PATCH`  | `/users/mypage`                    | 내 정보 수정                 |  O   |                                          |
+| 7   | 사용자 | `PATCH`  | `/users/password`                  | 비밀번호 변경                |  O   |                                          |
+| 8   | 사용자 | `DELETE` | `/users`                           | 회원 탈퇴                    |  O   |                                          |
+| 9   | 사용자 | `GET`    | `/users/mypage/summary`            | 마이페이지 통계              |  O   |                                          |
+| 10  | 사용자 | `GET`    | `/users/notification-settings`     | 알림 설정 조회               |  O   |                                          |
+| 11  | 사용자 | `PATCH`  | `/users/notification-settings`     | 알림 설정 수정               |  O   |                                          |
+| 12  | 작물   | `GET`    | `/crops`                           | 작물 목록 조회               |  O   |                                          |
+| 13  | 진단   | `POST`   | `/diagnoses`                       | 이미지 진단 요청             |      | AI 모델 연동 필요                        |
+| 14  | 기록   | `GET`    | `/diagnoses`                       | 진단 기록 목록 (필터+페이징) |  O   |                                          |
+| 15  | 기록   | `GET`    | `/diagnoses/{id}`                  | 진단 상세 조회               |  O   |                                          |
+| 16  | 기록   | `PATCH`  | `/diagnoses/{id}/treatment-status` | 방제 상태 변경               |  O   |                                          |
+| 17  | 기록   | `GET`    | `/diagnoses/{id}/similar-cases`    | 유사 사례 조회               |  O   |                                          |
+| 18  | 캘린더 | `GET`    | `/calendar/diagnoses`              | 월별 캘린더 기록             |  O   |                                          |
+| 19  | 캘린더 | `GET`    | `/calendar/diagnoses/{date}`       | 특정 날짜 기록               |  O   |                                          |
+| 20  | 통계   | `GET`    | `/diagnoses/stats/monthly`         | 월별 통계                    |  O   |                                          |
+| 21  | 기상   | `GET`    | `/weather/{city}/{district}`       | 지역별 기상 조회             |      | 기상청 API 연동 필요                     |
+| 22  | 챗봇   | `POST`   | `/chat/sessions`                   | 채팅 세션 생성               |  O   |                                          |
+| 23  | 챗봇   | `GET`    | `/chat/sessions`                   | 세션 목록 조회               |  O   |                                          |
+| 24  | 챗봇   | `GET`    | `/chat/sessions/{id}/messages`     | 채팅 이력 조회               |  O   |                                          |
+| 25  | 챗봇   | `POST`   | `/chat/sessions/{id}/messages`     | 메시지 전송                  |  O   | AI 응답 생성은 추후 연동                 |
 
 ### 미구현 사유 요약
 
 | 도메인 | 미구현 엔드포인트 수 | 사유                                             |
 | ------ | :------------------: | ------------------------------------------------ |
-| 인증   |         4개          | JWT 토큰 발급/검증 로직 필요                     |
 | 진단   |         1개          | AI 진단 모델(이미지 분석) 외부 연동 필요         |
 | 기상   |         1개          | 기상청 단기예보 API 외부 연동 필요               |
 | 챗봇   |         0개          | 메시지 전송 구현 완료 (AI 응답 생성은 추후 연동) |
@@ -85,6 +84,8 @@
 }
 ```
 
+> refreshToken은 응답 body가 아니라 `Set-Cookie` 헤더(HttpOnly)로 전달된다.
+
 ---
 
 ### 로그인
@@ -105,10 +106,11 @@
 ```json
 {
   "accessToken": "...",
-  "refreshToken": "...",
   "user": { ... }
 }
 ```
+
+> accessToken만 body로 반환된다. refreshToken은 `Set-Cookie` 헤더(HttpOnly)로 전달되므로 클라이언트 JS는 접근/저장하지 않는다.
 
 ---
 
@@ -122,11 +124,7 @@
 
 **Response**
 
-```json
-{
-  "loggedOut": true
-}
-```
+`204 No Content` (body 없음). refreshToken 쿠키를 만료시킨다.
 
 ---
 
@@ -136,11 +134,7 @@
 
 **Request**
 
-```json
-{
-  "refreshToken": "..."
-}
-```
+없음 (refreshToken은 HttpOnly 쿠키에서 읽는다)
 
 **Response**
 
@@ -149,6 +143,8 @@
   "accessToken": "..."
 }
 ```
+
+> 새 refreshToken은 다시 `Set-Cookie`(HttpOnly)로 회전 발급된다.
 
 ---
 

@@ -1,5 +1,14 @@
 import withSerwistInit from "@serwist/next";
 
+// 백엔드 프록시 대상 origin (rewrites 전용 — 서버 사이드에서만 읽음).
+// 브라우저는 항상 동일 출처 `/api/*`로만 요청하고 Next 서버가 여기로 중계한다.
+// 이렇게 하면 CORS·쿠키 SameSite=Strict·쿠키 Path 불일치를 한 번에 우회한다.
+// 기본값은 현재 배포 백엔드(공개 Cloud Run URL, 시크릿 아님)를 가리키는 의도된 운영 편의값.
+// 스테이징 등 다른 백엔드로 붙일 때는 BACKEND_PROXY_ORIGIN 환경변수로 덮어쓴다.
+const BACKEND_PROXY_ORIGIN =
+  process.env.BACKEND_PROXY_ORIGIN ??
+  "https://sdg-backend-307053111333.asia-northeast3.run.app";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -9,6 +18,14 @@ const nextConfig = {
         hostname: "images.unsplash.com",
       },
     ],
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${BACKEND_PROXY_ORIGIN}/:path*`,
+      },
+    ];
   },
 };
 

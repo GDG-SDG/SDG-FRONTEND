@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Leaf } from "lucide-react";
+import { getAccessToken } from "@/lib/auth/token";
 
 const SPLASH_DURATION_MS = 1600;
 
@@ -12,7 +13,9 @@ export default function SplashPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.replace("/calendar");
+      // 로그인 토큰이 없으면 로그인 화면으로, 있으면 메인으로 진입
+      const next = getAccessToken() ? "/calendar" : "/login";
+      router.replace(next);
     }, SPLASH_DURATION_MS);
     return () => clearTimeout(timer);
   }, [router]);
