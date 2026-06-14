@@ -37,4 +37,28 @@
 
 ### ⏭️ 남은 작업
 
-- [ ] 런타임 동작 확인 후 커밋/PR
+- [ ] PR 생성 (`/pr`) → main 머지 시 #18 자동 종료
+- [ ] 실백엔드에서 403 만료→자동 재발급 / refresh 실패→자동 로그아웃 최종 확인
+
+### Commit — 2026-06-14
+
+- Hash: `fdb9c52`
+- Message: `Fix:#18 accessToken 메모리 전환 및 부팅 silent refresh·nav 고정 적용`
+- Issue: `#18` (Closes)
+
+**변경 요약**
+
+- accessToken 저장소 localStorage → 메모리 모듈 변수 전환 (XSS 노출 제거)
+- Providers 부팅 silent refresh + authReady 게이트로 새로고침 후 로그인 복구
+- 인터셉터 refresh 트리거 401 → (401 || 403), refresh 실패 시 clearTokens + `/login` 리다이렉트
+- 공통 레이아웃·중첩 스크롤러에 `min-h-0` 추가 → 하단 nav 고정
+- `html, body` 배경을 page-bg 끝색(#ecf1ee)으로 맞춰 100dvh 하단 흰 여백 제거
+
+**결정 로그**
+
+- 단일 커밋으로 묶음 (인증 흐름 + nav 고정이 한 이슈 범위라 분리 불필요), `Closes #18` 적용
+- nav 보정은 safe-area 패딩 대신 body 배경 매칭으로 처리 (패딩 증가 시 오히려 더 떠 보임)
+
+**다음 작업**
+
+- `/pr`로 PR 생성
