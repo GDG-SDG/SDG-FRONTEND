@@ -2,7 +2,7 @@
 
 /** GET /users/mypage (내 정보) */
 export interface Mypage {
-  id: number;
+  id: string; // 백엔드 실제 응답은 UUID 문자열
   name: string;
   email: string;
   phone: string;

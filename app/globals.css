@@ -100,6 +100,11 @@
   box-shadow: 0 0 0 3px rgba(45, 122, 62, 0.12);
 }
 
+/* 커스텀 드롭다운(AuthSelect) 옵션 hover */
+.auth-select-option:hover {
+  background: rgba(45, 122, 62, 0.08) !important;
+}
+
 /* Liquid Glass color tokens — use as rgb(var(--glass-text) / <alpha>) */
 :root {
   --glass-text: 20 60 35;

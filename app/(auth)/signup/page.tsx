@@ -4,8 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AuthField } from "@/components/auth/AuthField";
+import { AuthSelect } from "@/components/auth/AuthSelect";
 import { useSignup } from "@/lib/queries/useAuth";
 import {
+  formatPhoneNumber,
   hasNoErrors,
   validateSignup,
   type FieldErrors,
@@ -119,11 +121,12 @@ export default function SignupPage() {
           label="연락처"
           name="phone"
           type="tel"
-          inputMode="tel"
+          inputMode="numeric"
           autoComplete="tel"
           placeholder="010-1234-5678"
+          maxLength={13}
           value={form.phone}
-          onChange={(e) => update("phone")(e.target.value)}
+          onChange={(e) => update("phone")(formatPhoneNumber(e.target.value))}
           error={errors.phone}
         />
         <AuthField
@@ -135,61 +138,16 @@ export default function SignupPage() {
           error={errors.location}
         />
 
-        {/* 재배 유형 — select */}
-        <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="farmType"
-            style={{
-              fontSize: "13px",
-              fontWeight: 600,
-              color: "rgb(var(--glass-text) / 0.75)",
-            }}
-          >
-            재배 유형
-          </label>
-          <select
-            id="farmType"
-            name="farmType"
-            className="auth-input"
-            value={form.farmType}
-            onChange={(e) => update("farmType")(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "13px 16px",
-              borderRadius: "14px",
-              fontSize: "15px",
-              color: form.farmType
-                ? "rgb(var(--glass-text) / 0.95)"
-                : "rgb(var(--glass-text) / 0.4)",
-              background: "rgba(255,255,255,0.7)",
-              border: errors.farmType
-                ? "1.5px solid rgba(220,80,70,0.7)"
-                : "1.5px solid rgba(180,200,188,0.55)",
-              outline: "none",
-              appearance: "none",
-            }}
-          >
-            <option value="" disabled>
-              재배 유형을 선택하세요
-            </option>
-            {FARM_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-          {errors.farmType && (
-            <span
-              style={{
-                fontSize: "12px",
-                fontWeight: 500,
-                color: "rgb(220,80,70)",
-              }}
-            >
-              {errors.farmType}
-            </span>
-          )}
-        </div>
+        {/* 재배 유형 — 커스텀 드롭다운 */}
+        <AuthSelect
+          label="재배 유형"
+          name="farmType"
+          value={form.farmType}
+          options={FARM_TYPES}
+          onChange={update("farmType")}
+          placeholder="재배 유형을 선택하세요"
+          error={errors.farmType}
+        />
       </div>
 
       {signupMutation.isError && (

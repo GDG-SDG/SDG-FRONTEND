@@ -34,6 +34,8 @@ export async function apiFetch<T>(
 
   const res = await fetch(`${BASE_URL}${path}`, {
     ...rest,
+    // refreshToken HttpOnly 쿠키 송수신을 위해 크로스 오리진에서도 자격증명 포함
+    credentials: "include",
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
@@ -58,7 +60,19 @@ export async function apiFetch<T>(
   }
 
   if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
+
+  const json = await res.json();
+  // 백엔드 공통 응답 래퍼 { success, data } 를 자동으로 벗긴다.
+  // (일부 엔드포인트는 래퍼 없이 raw 로 응답하므로 그 경우는 그대로 반환)
+  if (
+    json !== null &&
+    typeof json === "object" &&
+    "success" in json &&
+    "data" in json
+  ) {
+    return (json as { data: T }).data;
+  }
+  return json as T;
 }
 
 /** undefined·빈 값을 제외한 query string 빌더 (앞에 ? 포함) */

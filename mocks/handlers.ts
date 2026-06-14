@@ -39,7 +39,7 @@ export const handlers = [
   // ---- 인증 ----
   http.post("*/auth/signup", () => HttpResponse.json(MOCK_SIGNUP_RESPONSE)),
   http.post("*/auth/login", () => HttpResponse.json(MOCK_LOGIN_RESPONSE)),
-  http.post("*/auth/logout", () => HttpResponse.json({ loggedOut: true })),
+  http.post("*/auth/logout", () => new HttpResponse(null, { status: 204 })),
   http.post("*/auth/refresh", () =>
     HttpResponse.json({ accessToken: MOCK_LOGIN_RESPONSE.accessToken }),
   ),

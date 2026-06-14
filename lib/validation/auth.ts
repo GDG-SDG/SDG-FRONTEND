@@ -20,6 +20,17 @@ export function validatePassword(password: string): string | undefined {
   return undefined;
 }
 
+/**
+ * 입력값을 010-1234-5678 형태로 자동 포맷.
+ * 숫자만 추출해 최대 11자리까지 3-4-4로 하이픈을 끼운다 (입력 중 부분값도 자연스럽게).
+ */
+export function formatPhoneNumber(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
+
 export function validatePhone(phone: string): string | undefined {
   if (!phone.trim()) return "연락처를 입력해주세요.";
   if (!PHONE_RE.test(phone))
