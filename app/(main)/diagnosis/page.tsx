@@ -461,7 +461,7 @@ export default function DiagnosisPage() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="min-h-0 flex-1 overflow-y-auto">
             <div
               className="px-4 py-3"
               style={{ borderBottom: "1px solid #F5F5F5" }}

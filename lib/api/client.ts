@@ -32,6 +32,17 @@ type FetchOptions = Omit<RequestInit, "body"> & {
  */
 let refreshPromise: Promise<string | null> | null = null;
 
+/**
+ * 세션 만료 시 로그인 페이지로 강제 이동(자동 로그아웃).
+ * 이미 인증 화면(/login·/signup)에 있으면 중복 이동하지 않는다.
+ */
+function redirectToLogin(): void {
+  if (typeof window === "undefined") return;
+  const { pathname } = window.location;
+  if (pathname.startsWith("/login") || pathname.startsWith("/signup")) return;
+  window.location.assign("/login");
+}
+
 function refreshAccessToken(): Promise<string | null> {
   if (!refreshPromise) {
     refreshPromise = refresh()
@@ -73,14 +84,20 @@ export async function apiFetch<T>(
 
   let res = await fetch(`${BASE_URL}${path}`, buildInit(getAccessToken()));
 
-  // accessToken 만료(401)면 refresh 1회 후 원요청 재시도.
+  // accessToken 만료 시 refresh 1회 후 원요청 재시도.
+  // 백엔드(Spring Security)는 만료/누락 토큰에 401뿐 아니라 403도 반환하므로 둘 다 트리거에 포함.
   // /auth/* 자체(로그인 실패·refresh 실패 등)는 재발급 대상이 아니므로 제외 → 무한루프 방지.
-  if (res.status === 401 && !path.startsWith("/auth/")) {
+  if (
+    (res.status === 401 || res.status === 403) &&
+    !path.startsWith("/auth/")
+  ) {
     const newToken = await refreshAccessToken();
     if (newToken) {
       res = await fetch(`${BASE_URL}${path}`, buildInit(newToken));
     } else {
+      // refresh 실패 = 세션 만료 → 토큰 정리 후 자동 로그아웃.
       clearTokens();
+      redirectToLogin();
     }
   }
 

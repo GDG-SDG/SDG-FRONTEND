@@ -39,7 +39,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full relative">
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {/* Header */}
         <div className="glass-bar-top px-5 pt-4 pb-3 flex-shrink-0 sticky top-0 z-20">
           <div className="flex items-center justify-between mb-3">
