@@ -98,6 +98,7 @@ export default function MyPage() {
   const router = useRouter();
   const logoutMutation = useLogout();
   const handleLogout = () => {
+    // 토큰 정리는 useLogout 훅의 onSettled가 담당하고, 여기선 네비게이션만 처리한다.
     logoutMutation.mutate(undefined, {
       onSettled: () => router.replace("/login"),
     });

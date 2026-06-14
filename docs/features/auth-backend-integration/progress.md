@@ -39,6 +39,8 @@
 - [2026-06-10 00:10] 실제 로그인 응답이 `{accessToken, tokenType}` (api-spec의 `user` 없음) 확인 → `LoginResponse` 타입을 실제 응답에 맞춤.
 - [2026-06-11] 로그아웃 버튼 연결(`useLogout` — 서버 응답 무관 로컬 토큰 정리 후 /login), 회원가입 연락처 자동 포맷·재배유형 커스텀 드롭다운(`AuthSelect`), 앱 진입 분기(토큰 없으면 /login).
 - [2026-06-12] **백엔드 토큰 인증 해결 확인** — 보호 API 대부분 200. 단 성공 응답이 `{success,data}` 래퍼로 바뀜 → `apiFetch`에서 자동 unwrap, `Mypage.id`를 string(UUID)으로 수정. `GET /diagnoses`는 여전히 500.
+- [2026-06-14] **코드 리뷰(PR #14) 반영** — 401 시 `refresh()` 재발급 후 원요청 1회 재시도 인터셉터를 `apiFetch`에 구현(single-flight, `/auth/*` 제외). unwrap 판정을 `"success" in json` 단일 키로 단순화(`/crops` raw 배열 보존), 성공 응답 `res.json()` try/catch 가드. type-check·prod build 통과.
+- [2026-06-14] accessToken은 현 단계에선 localStorage 유지(절충). **메모리 전환 + 부팅 silent refresh는 후속 이슈로 분리** — refresh 인터셉터가 선행 완료되어 후속 작업이 unblock됨.
 
 ### 🔧 Next dev proxy 구성
 
@@ -58,7 +60,10 @@
 ### ⏭️ 남은 작업
 
 - [x] ~~#2 JWT 검증~~ → 6/12 해결됨
+- [x] ~~(후속) 401 응답 시 자동 `refresh` 인터셉터~~ → 6/14 구현됨 (`lib/api/client.ts`)
 - [ ] 브라우저에서 로그인→mypage→대시보드 실데이터 렌더 최종 확인 (dev 서버 재시작 필요)
 - [ ] **백엔드 남은 건**: `GET /diagnoses` 500, 로그인/가입 실패 에러코드(500→401/409), 응답 래퍼 통일(`/crops`)
-- [ ] (후속) 401 응답 시 자동 `refresh` 인터셉터
+- [ ] **(후속 이슈) accessToken 메모리 전환 + 부팅 silent refresh** — XSS 노출면 축소. boot 시 깜빡임/race 처리 동반 필요.
+- [ ] (후속 이슈) 보호 라우트 공통 가드 — 현재 토큰 분기는 스플래시(`app/page.tsx`)에만 존재, 딥링크 대비 `(main)` 레이아웃/미들웨어 가드 추가.
+- [ ] (후속) 핵심 로직 단위 테스트 — `apiFetch` unwrap/refresh, `formatPhoneNumber`, `validateLogin` (현재 테스트 인프라 없음).
 - 백엔드 전달용 상세: `backend-issues.md`
