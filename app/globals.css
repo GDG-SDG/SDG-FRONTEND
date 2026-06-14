@@ -171,6 +171,14 @@
   background: linear-gradient(160deg, #ffffff 0%, #f5f8f6 60%, #ecf1ee 100%);
 }
 
+/* 100dvh 컨테이너 아래(모바일 하단 safe-area·overscroll 영역)로 순백 body가
+   비쳐 하단 nav가 흰 선반 위에 떠 보이는 현상 방지 — page-bg 그라데이션
+   끝색과 맞춰 빈틈을 메운다. (unlayered 규칙이라 base의 bg-background보다 우선) */
+html,
+body {
+  background-color: #ecf1ee;
+}
+
 /* No-radius variants for sticky bars where rounded edges would not align */
 .glass-bar {
   background: rgba(255, 255, 255, 0.45);
