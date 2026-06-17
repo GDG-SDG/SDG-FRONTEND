@@ -258,7 +258,7 @@ export default function ChatbotPage() {
       </div>
 
       {/* Chat area */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-2 flex flex-col gap-3">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-2 flex flex-col gap-3">
         {messages.map((msg) => (
           <ChatBubble key={msg.id} message={msg} />
         ))}
