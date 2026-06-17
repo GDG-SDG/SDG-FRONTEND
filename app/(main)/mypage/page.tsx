@@ -132,7 +132,10 @@ export default function MyPage() {
   ];
 
   return (
-    <div className="h-full overflow-y-auto" style={{ paddingBottom: "24px" }}>
+    <div
+      className="h-full overflow-y-auto overscroll-contain"
+      style={{ paddingBottom: "24px" }}
+    >
       {/* Profile section */}
       <div className="glass-card-strong mx-4 mt-4 rounded-2xl overflow-hidden">
         <div

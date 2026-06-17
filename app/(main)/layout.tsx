@@ -42,7 +42,7 @@ export default function MainLayout({
       {/* min-h-0 필수: flex 자식이 콘텐츠 높이만큼 늘어나 하단 nav를 밀어내는 것을 막고,
           이 영역 내부에서만 스크롤되도록 한다 (nav 고정). */}
       <div
-        className="min-h-0 flex-1 overflow-y-auto"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
         style={{ paddingTop: "max(env(safe-area-inset-top), 16px)" }}
       >
         {children}

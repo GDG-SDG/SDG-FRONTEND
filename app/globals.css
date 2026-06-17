@@ -179,6 +179,19 @@ body {
   background-color: #ecf1ee;
 }
 
+/* iOS Safari: 문서(body) 자체 스크롤·고무줄 바운스(overscroll)를 막아
+   하단 nav가 콘텐츠와 함께 끌려 올라가는 현상 방지.
+   실제 스크롤은 내부 overflow-y-auto 컨테이너가 전담한다. */
+html {
+  height: 100%;
+}
+body {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 /* No-radius variants for sticky bars where rounded edges would not align */
 .glass-bar {
   background: rgba(255, 255, 255, 0.45);
