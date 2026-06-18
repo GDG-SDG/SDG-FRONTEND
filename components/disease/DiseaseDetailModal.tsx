@@ -32,7 +32,6 @@ export function DiseaseDetailModal({
   onStartChat,
 }: DiseaseDetailModalProps) {
   const topResult = detail.results[0];
-  if (!topResult) return null;
 
   const colors = getSeverityColor(detail.severity);
   const showFooter = Boolean(onToggleTreatment || onStartChat);
@@ -77,6 +76,9 @@ export function DiseaseDetailModal({
       previouslyFocused?.focus();
     };
   }, []);
+
+  // 진단 결과가 비어 있으면 렌더하지 않음 (hook 호출 이후로 내려 Rules of Hooks 준수)
+  if (!topResult) return null;
 
   return (
     <div
@@ -217,8 +219,9 @@ export function DiseaseDetailModal({
                       }}
                     >
                       <strong style={{ color: "#333" }}>{item.location}</strong>{" "}
-                      · {item.cropName} · 습도 {item.weather.humidity}% · 온도{" "}
-                      {item.weather.temperature}°C
+                      · {item.cropName}
+                      {item.weather &&
+                        ` · 습도 ${item.weather.humidity}% · 온도 ${item.weather.temperature}°C`}
                     </p>
                   </div>
                 ))
@@ -239,7 +242,7 @@ export function DiseaseDetailModal({
               💊 회복 및 방제 방법
             </h4>
             <div className="space-y-2">
-              {topResult.treatmentSteps.map((step) => (
+              {(topResult.treatmentSteps ?? []).map((step) => (
                 <div key={step.stepOrder} className="flex items-start gap-2">
                   <div
                     className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"

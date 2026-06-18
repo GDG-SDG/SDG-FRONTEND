@@ -17,7 +17,7 @@ export interface CalendarDiagnosis {
   cropName: string;
   diseaseName: string;
   severity: Severity;
-  imageUrl: string;
+  imageUrl: string | null;
   confidence: number;
   location: string;
 }
