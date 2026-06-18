@@ -10,6 +10,8 @@ import {
   MessageSquare,
   Plus,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { QUICK_QUESTIONS } from "@/lib/data/mockData";
 import type { ChatMessage } from "@/lib/types/chat";
 import {
@@ -53,7 +55,15 @@ function ChatBubble({ message }: { message: ChatMessage }) {
             lineHeight: 1.6,
           }}
         >
-          {message.text}
+          {isAI ? (
+            <div className="chat-md">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.text}
+              </ReactMarkdown>
+            </div>
+          ) : (
+            <span style={{ whiteSpace: "pre-wrap" }}>{message.text}</span>
+          )}
         </div>
         {isAI && (
           <div className="flex items-center gap-1.5 px-1">
