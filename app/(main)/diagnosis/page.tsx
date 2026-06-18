@@ -30,9 +30,20 @@ export default function DiagnosisPage() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [timeStr, setTimeStr] = useState("");
 
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const objectUrlRef = useRef<string | null>(null);
+
   const { data: crops } = useCrops();
   const mockRecord = DIAGNOSIS_RECORDS[0];
   const severityColors = getSeverityColor("심각");
+
+  // 컴포넌트 unmount 시 생성한 objectURL 해제 (메모리 누수 방지)
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const update = () =>
@@ -87,14 +98,36 @@ export default function DiagnosisPage() {
     }, 150);
   };
 
-  const handleCapture = () => {
-    if (!isOnline) return;
-    setCapturedImage(mockRecord.imageUrl);
+  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    // 같은 파일을 다시 선택해도 onChange가 발생하도록 value 초기화
+    e.target.value = "";
+    if (!file || !isOnline) return;
+
+    if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    const url = URL.createObjectURL(file);
+    objectUrlRef.current = url;
+
+    setCapturedImage(url);
     setStage("captured");
     setTimeout(() => startAnalysis(), 600);
   };
 
+  const openCamera = () => {
+    if (!isOnline) return;
+    cameraInputRef.current?.click();
+  };
+
+  const openGallery = () => {
+    if (!isOnline) return;
+    galleryInputRef.current?.click();
+  };
+
   const reset = () => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
     setStage("ready");
     setProgress(0);
     setCapturedImage(null);
@@ -102,6 +135,24 @@ export default function DiagnosisPage() {
 
   return (
     <div className="flex flex-col h-full">
+      {/* 실제 카메라 촬영 (후면 카메라 우선) */}
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFileSelected}
+      />
+      {/* 갤러리에서 사진 선택 */}
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileSelected}
+      />
+
       {!isOnline && (
         <div
           className="flex items-center justify-center gap-2 py-2 px-4"
@@ -592,14 +643,18 @@ export default function DiagnosisPage() {
         {stage === "ready" ? (
           <>
             <div className="flex items-center justify-between">
-              <button className="glass-pill w-12 h-12 rounded-2xl flex items-center justify-center">
+              <button
+                onClick={openGallery}
+                disabled={!isOnline}
+                className="glass-pill w-12 h-12 rounded-2xl flex items-center justify-center disabled:opacity-50"
+              >
                 <Image
                   size={22}
                   style={{ color: "rgb(var(--glass-text) / 0.7)" }}
                 />
               </button>
               <button
-                onClick={handleCapture}
+                onClick={openCamera}
                 disabled={!isOnline}
                 className="relative flex items-center justify-center rounded-full shadow-lg active:scale-95 transition-transform"
                 style={{
