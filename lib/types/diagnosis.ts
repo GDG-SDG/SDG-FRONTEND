@@ -16,7 +16,8 @@ export interface DiagnoseResponse {
 export interface DiagnosisListItem {
   id: number;
   cropName: string;
-  imageUrl: string;
+  // 백엔드가 이미지 미보유 시 null/빈값을 줄 수 있어 렌더 시 가드한다.
+  imageUrl: string | null;
   diseaseName: string;
   confidence: number;
   severity: Severity;
@@ -24,7 +25,8 @@ export interface DiagnosisListItem {
   diagnosedAt: string;
   weather: Weather;
   description: string;
-  lesionArea: LesionArea;
+  // AI 연동 미구현 구간에서는 백엔드가 병변 좌표를 null로 내려줄 수 있다.
+  lesionArea: LesionArea | null;
 }
 
 /** 방제 단계 (상세 results[].treatmentSteps[]) */
@@ -43,9 +45,10 @@ export interface DiagnosisResult {
   confidence: number;
   severity: Severity;
   description: string;
-  lesionArea: LesionArea;
+  lesionArea: LesionArea | null;
   rank: number;
-  treatmentSteps: TreatmentStep[];
+  // AI 연동 미구현 구간에서는 방제 단계가 비어 있거나 null일 수 있다.
+  treatmentSteps: TreatmentStep[] | null;
   source: string;
 }
 
@@ -68,7 +71,7 @@ export interface SimilarCase {
   location: string;
   cropName: string;
   severity: Severity;
-  weather: Weather;
+  weather: Weather | null;
   diagnosedAt: string;
 }
 

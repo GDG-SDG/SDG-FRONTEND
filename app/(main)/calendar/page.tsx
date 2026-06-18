@@ -278,13 +278,17 @@ export default function CalendarPage() {
                         }}
                       >
                         <div className="relative w-16 h-16 flex-shrink-0">
-                          <Image
-                            src={rec.imageUrl}
-                            alt={rec.cropName}
-                            fill
-                            className="rounded-xl object-cover"
-                            sizes="64px"
-                          />
+                          {rec.imageUrl ? (
+                            <Image
+                              src={rec.imageUrl}
+                              alt={rec.cropName}
+                              fill
+                              className="rounded-xl object-cover"
+                              sizes="64px"
+                            />
+                          ) : (
+                            <div className="w-full h-full rounded-xl bg-[#F0F0F0]" />
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">

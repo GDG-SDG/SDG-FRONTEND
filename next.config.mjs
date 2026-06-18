@@ -17,6 +17,12 @@ const nextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      // 백엔드가 진단 이미지 URL을 플레이스홀더(example.com)로 내려주는 구간 대응.
+      // 실제 이미지 스토리지(GCS 등)로 교체되면 해당 호스트로 변경한다.
+      {
+        protocol: "https",
+        hostname: "example.com",
+      },
     ],
   },
   async rewrites() {

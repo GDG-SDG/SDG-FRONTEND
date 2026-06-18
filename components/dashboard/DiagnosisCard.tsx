@@ -36,23 +36,29 @@ export function DiagnosisCard({
       <button className="w-full min-w-0 text-left" onClick={onSelect}>
         <div className="flex gap-3 p-4">
           <div className="relative flex-shrink-0 w-20 h-20">
-            <Image
-              src={record.imageUrl}
-              alt={record.cropName}
-              fill
-              className="object-cover rounded-xl"
-              sizes="80px"
-            />
-            <div
-              className="absolute rounded-[3px]"
-              style={{
-                left: `${record.lesionArea.x * 0.8}%`,
-                top: `${record.lesionArea.y * 0.8}%`,
-                width: `${record.lesionArea.w}%`,
-                height: `${record.lesionArea.h}%`,
-                border: `2px solid ${colors.dot}`,
-              }}
-            />
+            {record.imageUrl ? (
+              <Image
+                src={record.imageUrl}
+                alt={record.cropName}
+                fill
+                className="object-cover rounded-xl"
+                sizes="80px"
+              />
+            ) : (
+              <div className="w-full h-full rounded-xl bg-[#F0F0F0]" />
+            )}
+            {record.lesionArea && (
+              <div
+                className="absolute rounded-[3px]"
+                style={{
+                  left: `${record.lesionArea.x * 0.8}%`,
+                  top: `${record.lesionArea.y * 0.8}%`,
+                  width: `${record.lesionArea.w}%`,
+                  height: `${record.lesionArea.h}%`,
+                  border: `2px solid ${colors.dot}`,
+                }}
+              />
+            )}
           </div>
           <div className="flex-1 min-w-0">
             {/* Meta — crop demoted to neutral text so it no longer competes
