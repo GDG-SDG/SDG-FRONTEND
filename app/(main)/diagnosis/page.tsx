@@ -693,6 +693,10 @@ export default function DiagnosisPage() {
               다시
             </button>
             <button
+              // TODO(진단 API 연동): 현재 화면은 mock 시뮬레이션이라 실 숫자 진단 ID가
+              // 없다. POST /diagnoses로 실 진단 id가 생기면
+              // router.push(`/chat?diagnosisId=${id}`)로 컨텍스트를 전달한다.
+              // (chat 페이지는 ?diagnosisId 숫자값을 받아 type:"diagnosis" 세션을 만든다.)
               onClick={() => router.push("/chat")}
               className="flex-1 py-3 rounded-xl"
               style={{

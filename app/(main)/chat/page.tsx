@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Send,
   CheckCircle,
@@ -14,12 +15,14 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { QUICK_QUESTIONS } from "@/lib/data/mockData";
 import type { ChatMessage } from "@/lib/types/chat";
+import type { DiagnosisDetail } from "@/lib/types/diagnosis";
 import {
   createChatSession,
   getChatMessages,
   sendChatMessage,
 } from "@/lib/api/chat";
 import { useChatSessions } from "@/lib/queries/useChat";
+import { useDiagnosisDetail } from "@/lib/queries/useDiagnoses";
 
 const nowHHMM = () =>
   new Date().toLocaleTimeString("ko-KR", {
@@ -28,7 +31,50 @@ const nowHHMM = () =>
     hour12: false,
   });
 
-function ChatBubble({ message }: { message: ChatMessage }) {
+// 진단 연계 진입 시 보여줄 환영 메시지 id (출처 배지를 숨기기 위해 식별).
+const DIAGNOSIS_WELCOME_ID = "diag-welcome";
+
+// 진단 상세 → 진단 맥락을 요약한 AI 환영 메시지. 마크다운(볼드)은 ChatBubble이 렌더한다.
+function buildDiagnosisWelcome(detail: DiagnosisDetail): ChatMessage {
+  const top = detail.results[0];
+  const name = top?.diseaseNameKr ?? "진단된 병해";
+  const confidence = top ? ` · 신뢰도 ${top.confidence}%` : "";
+  return {
+    id: DIAGNOSIS_WELCOME_ID,
+    role: "ai",
+    text: `**${detail.cropName} ${name}**(${detail.severity}${confidence}) 진단 결과를 함께 보고 있어요.\n\n방제 방법·재발 방지·약제 사용처럼 궁금한 점을 편하게 물어보세요.`,
+    timestamp: nowHHMM(),
+  };
+}
+
+// 진단 상세 조회 실패 시 사용할 일반 환영 메시지 (빈 화면 방지).
+function buildFallbackWelcome(): ChatMessage {
+  return {
+    id: DIAGNOSIS_WELCOME_ID,
+    role: "ai",
+    text: "진단 정보를 불러오지 못했어요. 그래도 작물 질병·방제에 대해 무엇이든 물어보세요.",
+    timestamp: nowHHMM(),
+  };
+}
+
+// 진단 병명 기반 맞춤 추천 질문.
+function buildDiagnosisQuestions(detail: DiagnosisDetail): string[] {
+  const name = detail.results[0]?.diseaseNameKr ?? "이 병해";
+  return [
+    `${name}, 지금 약을 써야 하나요?`,
+    `${name} 재발을 막으려면 어떻게 하나요?`,
+    "이웃 작물에도 퍼질 수 있나요?",
+    "며칠 후 다시 확인하면 되나요?",
+  ];
+}
+
+function ChatBubble({
+  message,
+  hideBadge = false,
+}: {
+  message: ChatMessage;
+  hideBadge?: boolean;
+}) {
   const isAI = message.role === "ai";
   return (
     <div className={`flex items-end gap-2 ${isAI ? "" : "flex-row-reverse"}`}>
@@ -65,7 +111,7 @@ function ChatBubble({ message }: { message: ChatMessage }) {
             <span style={{ whiteSpace: "pre-wrap" }}>{message.text}</span>
           )}
         </div>
-        {isAI && (
+        {isAI && !hideBadge && (
           <div className="flex items-center gap-1.5 px-1">
             {message.verified ? (
               <>
@@ -116,28 +162,75 @@ function ChatBubble({ message }: { message: ChatMessage }) {
   );
 }
 
-export default function ChatbotPage() {
+function ChatbotContent() {
   const { data: sessions } = useChatSessions();
+  const searchParams = useSearchParams();
+  // 진단 상세에서 "AI 상담 시작하기"로 진입 시 ?diagnosisId=<id> 로 컨텍스트 전달.
+  // 실 백엔드 진단 id는 UUID 문자열이므로 숫자로 변환하지 않고 그대로 사용한다.
+  const entryDiagnosisId = searchParams.get("diagnosisId") || null;
   const [sessionId, setSessionId] = useState<string | null>(null);
+  // 현재 세션의 진단 컨텍스트. URL 파라미터가 아니라 "지금 보고 있는 세션"을 따라간다
+  // (새 채팅·다른 세션 선택 시 엉뚱한 diagnosisId가 따라붙지 않도록).
+  const [sessionDiagnosisId, setSessionDiagnosisId] = useState<
+    string | number | null
+  >(entryDiagnosisId);
+  // 환영 메시지/추천질문을 현재 세션의 진단 맥락으로 구성하기 위한 상세 조회.
+  const {
+    data: diagnosisDetail,
+    isError: diagnosisDetailError,
+    isLoading: diagnosisDetailLoading,
+  } = useDiagnosisDetail(sessionDiagnosisId);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showHistoryMenu, setShowHistoryMenu] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  // 진단별 환영 메시지를 한 번만 주입하기 위한 가드.
+  const greetedDiagnosisRef = useRef<string | null>(null);
 
-  // 진입 시 자유 채팅 세션 생성 + 환영 메시지 로드
+  // 진입 시 세션 생성. diagnosisId가 있으면 진단 연계 세션(type: "diagnosis")으로
+  // 컨텍스트를 잇고, 환영 메시지는 진단 상세 기반으로 아래 effect에서 구성한다.
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const session = await createChatSession({ type: "free" });
+      const session = entryDiagnosisId
+        ? await createChatSession({
+            diagnosisId: entryDiagnosisId,
+            type: "diagnosis",
+          })
+        : await createChatSession({ type: "free" });
       if (!mounted) return;
       setSessionId(session.sessionId);
-      setMessages(await getChatMessages(session.sessionId));
+      if (!entryDiagnosisId) {
+        setMessages(await getChatMessages(session.sessionId));
+      }
     })();
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [entryDiagnosisId]);
+
+  // 진단 상세가 도착하면 진단 맥락 환영 메시지로 대화를 시작한다.
+  // 진입 세션(entryDiagnosisId)에 대해서만, 진단당 1회만 주입한다
+  // (기존 세션을 선택해 들어온 경우엔 서버 이력을 그대로 쓰므로 주입하지 않음).
+  useEffect(() => {
+    if (!entryDiagnosisId || sessionDiagnosisId !== entryDiagnosisId) return;
+    if (greetedDiagnosisRef.current === entryDiagnosisId) return;
+    // 상세 도착 → 진단 맥락 환영, 조회 실패 → 일반 환영(빈 화면 방지).
+    // 로딩 중이면 아직 주입하지 않고 다음 상태 변화를 기다린다.
+    if (diagnosisDetail) {
+      greetedDiagnosisRef.current = entryDiagnosisId;
+      setMessages([buildDiagnosisWelcome(diagnosisDetail)]);
+    } else if (diagnosisDetailError) {
+      greetedDiagnosisRef.current = entryDiagnosisId;
+      setMessages([buildFallbackWelcome()]);
+    }
+  }, [
+    entryDiagnosisId,
+    sessionDiagnosisId,
+    diagnosisDetail,
+    diagnosisDetailError,
+  ]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -155,7 +248,11 @@ export default function ChatbotPage() {
     setInput("");
     setIsTyping(true);
     try {
-      const aiMsg = await sendChatMessage({ sessionId, message: text });
+      const aiMsg = await sendChatMessage({
+        sessionId,
+        diagnosisId: sessionDiagnosisId ?? undefined,
+        message: text,
+      });
       setMessages((prev) => [...prev, aiMsg]);
     } finally {
       setIsTyping(false);
@@ -166,14 +263,24 @@ export default function ChatbotPage() {
     setShowHistoryMenu(false);
     const session = await createChatSession({ type: "free" });
     setSessionId(session.sessionId);
+    setSessionDiagnosisId(null);
     setMessages(await getChatMessages(session.sessionId));
   };
 
   const handleSelectSession = async (sid: string) => {
     setShowHistoryMenu(false);
+    const selected = (sessions ?? []).find((s) => s.sessionId === sid);
+    const nextDiagnosisId = selected?.diagnosisId ?? null;
     setSessionId(sid);
-    setMessages(await getChatMessages(sid));
+    setSessionDiagnosisId(nextDiagnosisId);
+    setMessages(await getChatMessages(sid, nextDiagnosisId ?? undefined));
   };
+
+  // 현재 세션이 진단 연계면 병명 맞춤 질문, 아니면 기본 빠른 질문.
+  const quickQuestions =
+    sessionDiagnosisId && diagnosisDetail
+      ? buildDiagnosisQuestions(diagnosisDetail)
+      : QUICK_QUESTIONS;
 
   return (
     <div className="flex flex-col h-full">
@@ -270,8 +377,21 @@ export default function ChatbotPage() {
       {/* Chat area */}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-2 flex flex-col gap-3">
         {messages.map((msg) => (
-          <ChatBubble key={msg.id} message={msg} />
+          <ChatBubble
+            key={msg.id}
+            message={msg}
+            hideBadge={msg.id === DIAGNOSIS_WELCOME_ID}
+          />
         ))}
+
+        {/* 진단 연계 진입 시 상세 로딩 동안 빈 화면 방지 */}
+        {messages.length === 0 && diagnosisDetailLoading && (
+          <div className="flex items-center justify-center py-6">
+            <p style={{ fontSize: "13px", color: "#9E9E9E" }}>
+              진단 정보를 불러오는 중...
+            </p>
+          </div>
+        )}
 
         {isTyping && (
           <div className="flex items-end gap-2">
@@ -324,7 +444,7 @@ export default function ChatbotPage() {
           className="flex gap-2 overflow-x-auto pb-1"
           style={{ scrollbarWidth: "none" }}
         >
-          {QUICK_QUESTIONS.map((q) => (
+          {quickQuestions.map((q) => (
             <button
               key={q}
               onClick={() => handleSend(q)}
@@ -376,5 +496,14 @@ export default function ChatbotPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+// useSearchParams는 Suspense 경계가 필요하다 (Next.js app router).
+export default function ChatbotPage() {
+  return (
+    <Suspense fallback={<div className="h-full" />}>
+      <ChatbotContent />
+    </Suspense>
   );
 }

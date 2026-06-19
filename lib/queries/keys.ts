@@ -4,7 +4,8 @@ import type { DiagnosisFilters } from "@/lib/types/diagnosis";
 export const queryKeys = {
   diagnoses: (filters?: DiagnosisFilters) =>
     ["diagnoses", "list", filters ?? {}] as const,
-  diagnosisDetail: (id: number) => ["diagnoses", "detail", id] as const,
+  diagnosisDetail: (id: string | number) =>
+    ["diagnoses", "detail", id] as const,
   similarCases: (id: number) => ["diagnoses", "similar", id] as const,
   crops: ["crops"] as const,
   mypage: ["users", "mypage"] as const,

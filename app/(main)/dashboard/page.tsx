@@ -233,7 +233,7 @@ export default function DashboardPage() {
             })
           }
           isUpdatingTreatment={updateStatus.isPending}
-          onStartChat={() => router.push("/chat")}
+          onStartChat={() => router.push(`/chat?diagnosisId=${detail.id}`)}
         />
       )}
     </div>

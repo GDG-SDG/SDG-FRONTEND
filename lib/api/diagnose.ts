@@ -20,7 +20,9 @@ export async function getDiagnoses(
 }
 
 /** GET /diagnoses/{id} — 진단 상세 조회 */
-export async function getDiagnosisDetail(id: number): Promise<DiagnosisDetail> {
+export async function getDiagnosisDetail(
+  id: string | number,
+): Promise<DiagnosisDetail> {
   return apiFetch<DiagnosisDetail>(`/diagnoses/${id}`);
 }
 

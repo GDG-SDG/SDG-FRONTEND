@@ -48,7 +48,7 @@ export async function getChatSessions(): Promise<ChatSession[]> {
 
 /** POST /chat/sessions — 세션 생성 */
 export async function createChatSession(params: {
-  diagnosisId?: number | null;
+  diagnosisId?: string | number | null;
   type: ChatType;
 }): Promise<CreateSessionResponse> {
   return apiFetch<CreateSessionResponse>("/chat/sessions", {
@@ -60,7 +60,7 @@ export async function createChatSession(params: {
 /** GET /chat/sessions/{id}/messages — 채팅 이력 */
 export async function getChatMessages(
   sessionId: string,
-  diagnosisId?: number,
+  diagnosisId?: string | number,
 ): Promise<ChatMessage[]> {
   const raw = await apiFetch<RawChatMessage[]>(
     `/chat/sessions/${sessionId}/messages${buildQuery({ diagnosisId })}`,
@@ -71,7 +71,7 @@ export async function getChatMessages(
 /** POST /chat/sessions/{id}/messages — 메시지 전송 (AI 응답 반환) */
 export async function sendChatMessage(params: {
   sessionId: string;
-  diagnosisId?: number | null;
+  diagnosisId?: string | number | null;
   message: string;
 }): Promise<ChatMessage> {
   const raw = await apiFetch<RawChatMessage>(
