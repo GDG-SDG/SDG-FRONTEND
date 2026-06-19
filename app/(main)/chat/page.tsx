@@ -47,6 +47,16 @@ function buildDiagnosisWelcome(detail: DiagnosisDetail): ChatMessage {
   };
 }
 
+// 진단 상세 조회 실패 시 사용할 일반 환영 메시지 (빈 화면 방지).
+function buildFallbackWelcome(): ChatMessage {
+  return {
+    id: DIAGNOSIS_WELCOME_ID,
+    role: "ai",
+    text: "진단 정보를 불러오지 못했어요. 그래도 작물 질병·방제에 대해 무엇이든 물어보세요.",
+    timestamp: nowHHMM(),
+  };
+}
+
 // 진단 병명 기반 맞춤 추천 질문.
 function buildDiagnosisQuestions(detail: DiagnosisDetail): string[] {
   const name = detail.results[0]?.diseaseNameKr ?? "이 병해";
@@ -165,7 +175,11 @@ function ChatbotContent() {
     string | number | null
   >(entryDiagnosisId);
   // 환영 메시지/추천질문을 현재 세션의 진단 맥락으로 구성하기 위한 상세 조회.
-  const { data: diagnosisDetail } = useDiagnosisDetail(sessionDiagnosisId);
+  const {
+    data: diagnosisDetail,
+    isError: diagnosisDetailError,
+    isLoading: diagnosisDetailLoading,
+  } = useDiagnosisDetail(sessionDiagnosisId);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -201,11 +215,22 @@ function ChatbotContent() {
   // (기존 세션을 선택해 들어온 경우엔 서버 이력을 그대로 쓰므로 주입하지 않음).
   useEffect(() => {
     if (!entryDiagnosisId || sessionDiagnosisId !== entryDiagnosisId) return;
-    if (!diagnosisDetail) return;
     if (greetedDiagnosisRef.current === entryDiagnosisId) return;
-    greetedDiagnosisRef.current = entryDiagnosisId;
-    setMessages([buildDiagnosisWelcome(diagnosisDetail)]);
-  }, [entryDiagnosisId, sessionDiagnosisId, diagnosisDetail]);
+    // 상세 도착 → 진단 맥락 환영, 조회 실패 → 일반 환영(빈 화면 방지).
+    // 로딩 중이면 아직 주입하지 않고 다음 상태 변화를 기다린다.
+    if (diagnosisDetail) {
+      greetedDiagnosisRef.current = entryDiagnosisId;
+      setMessages([buildDiagnosisWelcome(diagnosisDetail)]);
+    } else if (diagnosisDetailError) {
+      greetedDiagnosisRef.current = entryDiagnosisId;
+      setMessages([buildFallbackWelcome()]);
+    }
+  }, [
+    entryDiagnosisId,
+    sessionDiagnosisId,
+    diagnosisDetail,
+    diagnosisDetailError,
+  ]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -358,6 +383,15 @@ function ChatbotContent() {
             hideBadge={msg.id === DIAGNOSIS_WELCOME_ID}
           />
         ))}
+
+        {/* 진단 연계 진입 시 상세 로딩 동안 빈 화면 방지 */}
+        {messages.length === 0 && diagnosisDetailLoading && (
+          <div className="flex items-center justify-center py-6">
+            <p style={{ fontSize: "13px", color: "#9E9E9E" }}>
+              진단 정보를 불러오는 중...
+            </p>
+          </div>
+        )}
 
         {isTyping && (
           <div className="flex items-end gap-2">
