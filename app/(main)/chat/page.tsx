@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Send,
   CheckCircle,
@@ -116,8 +117,16 @@ function ChatBubble({ message }: { message: ChatMessage }) {
   );
 }
 
-export default function ChatbotPage() {
+function ChatbotContent() {
   const { data: sessions } = useChatSessions();
+  const searchParams = useSearchParams();
+  // 진단 상세에서 "AI 상담 시작하기"로 진입 시 ?diagnosisId=123 으로 컨텍스트 전달.
+  // 숫자가 아니면(예: mock 진단 흐름) null → 자유 채팅으로 폴백.
+  const rawDiagnosisId = searchParams.get("diagnosisId");
+  const diagnosisId =
+    rawDiagnosisId && Number.isFinite(Number(rawDiagnosisId))
+      ? Number(rawDiagnosisId)
+      : null;
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -125,19 +134,24 @@ export default function ChatbotPage() {
   const [showHistoryMenu, setShowHistoryMenu] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // 진입 시 자유 채팅 세션 생성 + 환영 메시지 로드
+  // 진입 시 세션 생성 + 환영 메시지 로드.
+  // diagnosisId가 있으면 진단 연계 세션(type: "diagnosis")으로 컨텍스트를 잇는다.
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const session = await createChatSession({ type: "free" });
+      const session = diagnosisId
+        ? await createChatSession({ diagnosisId, type: "diagnosis" })
+        : await createChatSession({ type: "free" });
       if (!mounted) return;
       setSessionId(session.sessionId);
-      setMessages(await getChatMessages(session.sessionId));
+      setMessages(
+        await getChatMessages(session.sessionId, diagnosisId ?? undefined),
+      );
     })();
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [diagnosisId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -155,7 +169,11 @@ export default function ChatbotPage() {
     setInput("");
     setIsTyping(true);
     try {
-      const aiMsg = await sendChatMessage({ sessionId, message: text });
+      const aiMsg = await sendChatMessage({
+        sessionId,
+        diagnosisId: diagnosisId ?? undefined,
+        message: text,
+      });
       setMessages((prev) => [...prev, aiMsg]);
     } finally {
       setIsTyping(false);
@@ -376,5 +394,14 @@ export default function ChatbotPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+// useSearchParams는 Suspense 경계가 필요하다 (Next.js app router).
+export default function ChatbotPage() {
+  return (
+    <Suspense fallback={<div className="h-full" />}>
+      <ChatbotContent />
+    </Suspense>
   );
 }
