@@ -157,10 +157,15 @@ function ChatbotContent() {
   const searchParams = useSearchParams();
   // 진단 상세에서 "AI 상담 시작하기"로 진입 시 ?diagnosisId=<id> 로 컨텍스트 전달.
   // 실 백엔드 진단 id는 UUID 문자열이므로 숫자로 변환하지 않고 그대로 사용한다.
-  const diagnosisId = searchParams.get("diagnosisId") || null;
-  // 진단 연계 진입 시 환영 메시지/추천질문을 진단 맥락으로 구성하기 위한 상세 조회.
-  const { data: diagnosisDetail } = useDiagnosisDetail(diagnosisId);
+  const entryDiagnosisId = searchParams.get("diagnosisId") || null;
   const [sessionId, setSessionId] = useState<string | null>(null);
+  // 현재 세션의 진단 컨텍스트. URL 파라미터가 아니라 "지금 보고 있는 세션"을 따라간다
+  // (새 채팅·다른 세션 선택 시 엉뚱한 diagnosisId가 따라붙지 않도록).
+  const [sessionDiagnosisId, setSessionDiagnosisId] = useState<
+    string | number | null
+  >(entryDiagnosisId);
+  // 환영 메시지/추천질문을 현재 세션의 진단 맥락으로 구성하기 위한 상세 조회.
+  const { data: diagnosisDetail } = useDiagnosisDetail(sessionDiagnosisId);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -174,27 +179,33 @@ function ChatbotContent() {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const session = diagnosisId
-        ? await createChatSession({ diagnosisId, type: "diagnosis" })
+      const session = entryDiagnosisId
+        ? await createChatSession({
+            diagnosisId: entryDiagnosisId,
+            type: "diagnosis",
+          })
         : await createChatSession({ type: "free" });
       if (!mounted) return;
       setSessionId(session.sessionId);
-      if (!diagnosisId) {
+      if (!entryDiagnosisId) {
         setMessages(await getChatMessages(session.sessionId));
       }
     })();
     return () => {
       mounted = false;
     };
-  }, [diagnosisId]);
+  }, [entryDiagnosisId]);
 
-  // 진단 상세가 도착하면 진단 맥락 환영 메시지로 대화를 시작한다 (diagnosisId당 1회).
+  // 진단 상세가 도착하면 진단 맥락 환영 메시지로 대화를 시작한다.
+  // 진입 세션(entryDiagnosisId)에 대해서만, 진단당 1회만 주입한다
+  // (기존 세션을 선택해 들어온 경우엔 서버 이력을 그대로 쓰므로 주입하지 않음).
   useEffect(() => {
-    if (!diagnosisId || !diagnosisDetail) return;
-    if (greetedDiagnosisRef.current === diagnosisId) return;
-    greetedDiagnosisRef.current = diagnosisId;
+    if (!entryDiagnosisId || sessionDiagnosisId !== entryDiagnosisId) return;
+    if (!diagnosisDetail) return;
+    if (greetedDiagnosisRef.current === entryDiagnosisId) return;
+    greetedDiagnosisRef.current = entryDiagnosisId;
     setMessages([buildDiagnosisWelcome(diagnosisDetail)]);
-  }, [diagnosisId, diagnosisDetail]);
+  }, [entryDiagnosisId, sessionDiagnosisId, diagnosisDetail]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -214,7 +225,7 @@ function ChatbotContent() {
     try {
       const aiMsg = await sendChatMessage({
         sessionId,
-        diagnosisId: diagnosisId ?? undefined,
+        diagnosisId: sessionDiagnosisId ?? undefined,
         message: text,
       });
       setMessages((prev) => [...prev, aiMsg]);
@@ -227,18 +238,22 @@ function ChatbotContent() {
     setShowHistoryMenu(false);
     const session = await createChatSession({ type: "free" });
     setSessionId(session.sessionId);
+    setSessionDiagnosisId(null);
     setMessages(await getChatMessages(session.sessionId));
   };
 
   const handleSelectSession = async (sid: string) => {
     setShowHistoryMenu(false);
+    const selected = (sessions ?? []).find((s) => s.sessionId === sid);
+    const nextDiagnosisId = selected?.diagnosisId ?? null;
     setSessionId(sid);
-    setMessages(await getChatMessages(sid));
+    setSessionDiagnosisId(nextDiagnosisId);
+    setMessages(await getChatMessages(sid, nextDiagnosisId ?? undefined));
   };
 
-  // 진단 연계 진입이면 병명 맞춤 질문, 아니면 기본 빠른 질문.
+  // 현재 세션이 진단 연계면 병명 맞춤 질문, 아니면 기본 빠른 질문.
   const quickQuestions =
-    diagnosisId && diagnosisDetail
+    sessionDiagnosisId && diagnosisDetail
       ? buildDiagnosisQuestions(diagnosisDetail)
       : QUICK_QUESTIONS;
 
