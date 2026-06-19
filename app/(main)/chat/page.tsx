@@ -15,12 +15,14 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { QUICK_QUESTIONS } from "@/lib/data/mockData";
 import type { ChatMessage } from "@/lib/types/chat";
+import type { DiagnosisDetail } from "@/lib/types/diagnosis";
 import {
   createChatSession,
   getChatMessages,
   sendChatMessage,
 } from "@/lib/api/chat";
 import { useChatSessions } from "@/lib/queries/useChat";
+import { useDiagnosisDetail } from "@/lib/queries/useDiagnoses";
 
 const nowHHMM = () =>
   new Date().toLocaleTimeString("ko-KR", {
@@ -29,7 +31,40 @@ const nowHHMM = () =>
     hour12: false,
   });
 
-function ChatBubble({ message }: { message: ChatMessage }) {
+// 진단 연계 진입 시 보여줄 환영 메시지 id (출처 배지를 숨기기 위해 식별).
+const DIAGNOSIS_WELCOME_ID = "diag-welcome";
+
+// 진단 상세 → 진단 맥락을 요약한 AI 환영 메시지. 마크다운(볼드)은 ChatBubble이 렌더한다.
+function buildDiagnosisWelcome(detail: DiagnosisDetail): ChatMessage {
+  const top = detail.results[0];
+  const name = top?.diseaseNameKr ?? "진단된 병해";
+  const confidence = top ? ` · 신뢰도 ${top.confidence}%` : "";
+  return {
+    id: DIAGNOSIS_WELCOME_ID,
+    role: "ai",
+    text: `**${detail.cropName} ${name}**(${detail.severity}${confidence}) 진단 결과를 함께 보고 있어요.\n\n방제 방법·재발 방지·약제 사용처럼 궁금한 점을 편하게 물어보세요.`,
+    timestamp: nowHHMM(),
+  };
+}
+
+// 진단 병명 기반 맞춤 추천 질문.
+function buildDiagnosisQuestions(detail: DiagnosisDetail): string[] {
+  const name = detail.results[0]?.diseaseNameKr ?? "이 병해";
+  return [
+    `${name}, 지금 약을 써야 하나요?`,
+    `${name} 재발을 막으려면 어떻게 하나요?`,
+    "이웃 작물에도 퍼질 수 있나요?",
+    "며칠 후 다시 확인하면 되나요?",
+  ];
+}
+
+function ChatBubble({
+  message,
+  hideBadge = false,
+}: {
+  message: ChatMessage;
+  hideBadge?: boolean;
+}) {
   const isAI = message.role === "ai";
   return (
     <div className={`flex items-end gap-2 ${isAI ? "" : "flex-row-reverse"}`}>
@@ -66,7 +101,7 @@ function ChatBubble({ message }: { message: ChatMessage }) {
             <span style={{ whiteSpace: "pre-wrap" }}>{message.text}</span>
           )}
         </div>
-        {isAI && (
+        {isAI && !hideBadge && (
           <div className="flex items-center gap-1.5 px-1">
             {message.verified ? (
               <>
@@ -127,15 +162,19 @@ function ChatbotContent() {
     rawDiagnosisId && Number.isFinite(Number(rawDiagnosisId))
       ? Number(rawDiagnosisId)
       : null;
+  // 진단 연계 진입 시 환영 메시지/추천질문을 진단 맥락으로 구성하기 위한 상세 조회.
+  const { data: diagnosisDetail } = useDiagnosisDetail(diagnosisId);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showHistoryMenu, setShowHistoryMenu] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  // 진단별 환영 메시지를 한 번만 주입하기 위한 가드.
+  const greetedDiagnosisRef = useRef<number | null>(null);
 
-  // 진입 시 세션 생성 + 환영 메시지 로드.
-  // diagnosisId가 있으면 진단 연계 세션(type: "diagnosis")으로 컨텍스트를 잇는다.
+  // 진입 시 세션 생성. diagnosisId가 있으면 진단 연계 세션(type: "diagnosis")으로
+  // 컨텍스트를 잇고, 환영 메시지는 진단 상세 기반으로 아래 effect에서 구성한다.
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -144,14 +183,22 @@ function ChatbotContent() {
         : await createChatSession({ type: "free" });
       if (!mounted) return;
       setSessionId(session.sessionId);
-      setMessages(
-        await getChatMessages(session.sessionId, diagnosisId ?? undefined),
-      );
+      if (!diagnosisId) {
+        setMessages(await getChatMessages(session.sessionId));
+      }
     })();
     return () => {
       mounted = false;
     };
   }, [diagnosisId]);
+
+  // 진단 상세가 도착하면 진단 맥락 환영 메시지로 대화를 시작한다 (diagnosisId당 1회).
+  useEffect(() => {
+    if (!diagnosisId || !diagnosisDetail) return;
+    if (greetedDiagnosisRef.current === diagnosisId) return;
+    greetedDiagnosisRef.current = diagnosisId;
+    setMessages([buildDiagnosisWelcome(diagnosisDetail)]);
+  }, [diagnosisId, diagnosisDetail]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -192,6 +239,12 @@ function ChatbotContent() {
     setSessionId(sid);
     setMessages(await getChatMessages(sid));
   };
+
+  // 진단 연계 진입이면 병명 맞춤 질문, 아니면 기본 빠른 질문.
+  const quickQuestions =
+    diagnosisId && diagnosisDetail
+      ? buildDiagnosisQuestions(diagnosisDetail)
+      : QUICK_QUESTIONS;
 
   return (
     <div className="flex flex-col h-full">
@@ -288,7 +341,11 @@ function ChatbotContent() {
       {/* Chat area */}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-2 flex flex-col gap-3">
         {messages.map((msg) => (
-          <ChatBubble key={msg.id} message={msg} />
+          <ChatBubble
+            key={msg.id}
+            message={msg}
+            hideBadge={msg.id === DIAGNOSIS_WELCOME_ID}
+          />
         ))}
 
         {isTyping && (
@@ -342,7 +399,7 @@ function ChatbotContent() {
           className="flex gap-2 overflow-x-auto pb-1"
           style={{ scrollbarWidth: "none" }}
         >
-          {QUICK_QUESTIONS.map((q) => (
+          {quickQuestions.map((q) => (
             <button
               key={q}
               onClick={() => handleSend(q)}
