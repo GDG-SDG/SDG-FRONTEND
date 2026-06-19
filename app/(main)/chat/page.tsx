@@ -155,13 +155,9 @@ function ChatBubble({
 function ChatbotContent() {
   const { data: sessions } = useChatSessions();
   const searchParams = useSearchParams();
-  // 진단 상세에서 "AI 상담 시작하기"로 진입 시 ?diagnosisId=123 으로 컨텍스트 전달.
-  // 숫자가 아니면(예: mock 진단 흐름) null → 자유 채팅으로 폴백.
-  const rawDiagnosisId = searchParams.get("diagnosisId");
-  const diagnosisId =
-    rawDiagnosisId && Number.isFinite(Number(rawDiagnosisId))
-      ? Number(rawDiagnosisId)
-      : null;
+  // 진단 상세에서 "AI 상담 시작하기"로 진입 시 ?diagnosisId=<id> 로 컨텍스트 전달.
+  // 실 백엔드 진단 id는 UUID 문자열이므로 숫자로 변환하지 않고 그대로 사용한다.
+  const diagnosisId = searchParams.get("diagnosisId") || null;
   // 진단 연계 진입 시 환영 메시지/추천질문을 진단 맥락으로 구성하기 위한 상세 조회.
   const { data: diagnosisDetail } = useDiagnosisDetail(diagnosisId);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -171,7 +167,7 @@ function ChatbotContent() {
   const [showHistoryMenu, setShowHistoryMenu] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   // 진단별 환영 메시지를 한 번만 주입하기 위한 가드.
-  const greetedDiagnosisRef = useRef<number | null>(null);
+  const greetedDiagnosisRef = useRef<string | null>(null);
 
   // 진입 시 세션 생성. diagnosisId가 있으면 진단 연계 세션(type: "diagnosis")으로
   // 컨텍스트를 잇고, 환영 메시지는 진단 상세 기반으로 아래 effect에서 구성한다.

@@ -20,10 +20,10 @@ export function useDiagnoses(filters: DiagnosisFilters = {}) {
 }
 
 /** 진단 상세 — id가 null이면 비활성 */
-export function useDiagnosisDetail(id: number | null) {
+export function useDiagnosisDetail(id: string | number | null) {
   return useQuery({
     queryKey: queryKeys.diagnosisDetail(id ?? -1),
-    queryFn: () => getDiagnosisDetail(id as number),
+    queryFn: () => getDiagnosisDetail(id as string | number),
     enabled: id !== null,
   });
 }

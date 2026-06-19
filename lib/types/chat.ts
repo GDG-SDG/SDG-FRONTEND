@@ -7,7 +7,7 @@ export type ChatRole = "ai" | "user";
 export interface ChatSession {
   sessionId: string;
   type: ChatType;
-  diagnosisId: number | null;
+  diagnosisId: string | number | null;
   title: string;
   lastMessage: string;
   updatedAt: string;
@@ -17,7 +17,7 @@ export interface ChatSession {
 export interface CreateSessionResponse {
   sessionId: string;
   type: ChatType;
-  diagnosisId: number | null;
+  diagnosisId: string | number | null;
   createdAt: string;
 }
 
