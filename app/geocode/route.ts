@@ -46,10 +46,16 @@ export async function GET(request: Request) {
       next: { revalidate: 3600 },
     });
     if (!res.ok) {
-      // Kakao가 돌려준 원인 메시지를 그대로 노출한다(403=카카오맵 미활성화/키 오류 등 진단용).
+      // Kakao 원문은 서버 로그로만 남기고 클라이언트에는 노출하지 않는다(업스트림 정보 누출 방지).
+      // 단, 비운영 환경에서는 진단 편의를 위해 detail을 함께 반환한다(403=카카오맵 미활성화/키 오류 등).
       const detail = await res.text().catch(() => "");
+      console.error(`[geocode] Kakao 응답 오류 (${res.status}):`, detail);
+      const isProd = process.env.NEXT_PUBLIC_APP_ENV === "production";
       return NextResponse.json(
-        { error: `Kakao 응답 오류 (${res.status})`, detail },
+        {
+          error: `Kakao 응답 오류 (${res.status})`,
+          ...(isProd ? {} : { detail }),
+        },
         { status: 502 },
       );
     }

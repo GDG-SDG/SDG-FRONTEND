@@ -253,6 +253,18 @@ function ChatbotContent() {
       setMessages((prev) => [...prev, aiMsg]);
       // 새로 생성된 세션이 대화 기록 목록에 반영되도록 갱신.
       queryClient.invalidateQueries({ queryKey: queryKeys.chatSessions });
+    } catch {
+      // 세션 생성·메시지 전송 실패 시 사용자 메시지는 남겨두고
+      // 안내 버블을 띄워 재시도하도록 한다(요청이 조용히 사라지지 않게).
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `err-${Date.now()}`,
+          role: "ai",
+          text: "메시지를 전송하지 못했어요. 잠시 후 다시 보내주세요.",
+          timestamp: nowHHMM(),
+        },
+      ]);
     } finally {
       setIsTyping(false);
     }
