@@ -6,41 +6,65 @@
 
 > 전체 25개 엔드포인트 중 **23개 구현 완료** (92%)
 
-| #   | 도메인 | Method   | URL                                | 설명                         | 구현 | 비고                                     |
-| --- | ------ | -------- | ---------------------------------- | ---------------------------- | :--: | ---------------------------------------- |
-| 1   | 인증   | `POST`   | `/auth/signup`                     | 회원가입                     |  O   | refreshToken은 HttpOnly Cookie로 전달    |
-| 2   | 인증   | `POST`   | `/auth/login`                      | 로그인                       |  O   | accessToken만 Body, refreshToken은 쿠키  |
-| 3   | 인증   | `POST`   | `/auth/logout`                     | 로그아웃                     |  O   | 204 No Content 반환                      |
-| 4   | 인증   | `POST`   | `/auth/refresh`                    | 토큰 재발급                  |  O   | refreshToken 쿠키에서 읽고 쿠키로 재발급 |
-| 5   | 사용자 | `GET`    | `/users/mypage`                    | 내 정보 조회                 |  O   |                                          |
-| 6   | 사용자 | `PATCH`  | `/users/mypage`                    | 내 정보 수정                 |  O   |                                          |
-| 7   | 사용자 | `PATCH`  | `/users/password`                  | 비밀번호 변경                |  O   |                                          |
-| 8   | 사용자 | `DELETE` | `/users`                           | 회원 탈퇴                    |  O   |                                          |
-| 9   | 사용자 | `GET`    | `/users/mypage/summary`            | 마이페이지 통계              |  O   |                                          |
-| 10  | 사용자 | `GET`    | `/users/notification-settings`     | 알림 설정 조회               |  O   |                                          |
-| 11  | 사용자 | `PATCH`  | `/users/notification-settings`     | 알림 설정 수정               |  O   |                                          |
-| 12  | 작물   | `GET`    | `/crops`                           | 작물 목록 조회               |  O   |                                          |
-| 13  | 진단   | `POST`   | `/diagnoses`                       | 이미지 진단 요청             |      | AI 모델 연동 필요                        |
-| 14  | 기록   | `GET`    | `/diagnoses`                       | 진단 기록 목록 (필터+페이징) |  O   |                                          |
-| 15  | 기록   | `GET`    | `/diagnoses/{id}`                  | 진단 상세 조회               |  O   |                                          |
-| 16  | 기록   | `PATCH`  | `/diagnoses/{id}/treatment-status` | 방제 상태 변경               |  O   |                                          |
-| 17  | 기록   | `GET`    | `/diagnoses/{id}/similar-cases`    | 유사 사례 조회               |  O   |                                          |
-| 18  | 캘린더 | `GET`    | `/calendar/diagnoses`              | 월별 캘린더 기록             |  O   |                                          |
-| 19  | 캘린더 | `GET`    | `/calendar/diagnoses/{date}`       | 특정 날짜 기록               |  O   |                                          |
-| 20  | 통계   | `GET`    | `/diagnoses/stats/monthly`         | 월별 통계                    |  O   |                                          |
-| 21  | 기상   | `GET`    | `/weather/{city}/{district}`       | 지역별 기상 조회             |      | 기상청 API 연동 필요                     |
-| 22  | 챗봇   | `POST`   | `/chat/sessions`                   | 채팅 세션 생성               |  O   |                                          |
-| 23  | 챗봇   | `GET`    | `/chat/sessions`                   | 세션 목록 조회               |  O   |                                          |
-| 24  | 챗봇   | `GET`    | `/chat/sessions/{id}/messages`     | 채팅 이력 조회               |  O   |                                          |
-| 25  | 챗봇   | `POST`   | `/chat/sessions/{id}/messages`     | 메시지 전송                  |  O   | AI 응답 생성은 추후 연동                 |
+| #   | 도메인 | Method   | URL                                | 설명                         | 구현 | 비고                                               |
+| --- | ------ | -------- | ---------------------------------- | ---------------------------- | :--: | -------------------------------------------------- |
+| 1   | 인증   | `POST`   | `/auth/signup`                     | 회원가입                     |  O   |                                                    |
+| 2   | 인증   | `POST`   | `/auth/login`                      | 로그인                       |  O   | accessToken만 Body, refreshToken은 HttpOnly Cookie |
+| 3   | 인증   | `POST`   | `/auth/logout`                     | 로그아웃                     |  O   | 204 No Content 반환                                |
+| 4   | 인증   | `POST`   | `/auth/refresh`                    | 토큰 재발급                  |  O   | refreshToken 쿠키에서 읽고 쿠키로 재발급           |
+| 5   | 사용자 | `GET`    | `/users/mypage`                    | 내 정보 조회                 |  O   |                                                    |
+| 6   | 사용자 | `PATCH`  | `/users/mypage`                    | 내 정보 수정                 |  O   |                                                    |
+| 7   | 사용자 | `PATCH`  | `/users/password`                  | 비밀번호 변경                |  O   |                                                    |
+| 8   | 사용자 | `DELETE` | `/users`                           | 회원 탈퇴                    |  O   |                                                    |
+| 9   | 사용자 | `GET`    | `/users/mypage/summary`            | 마이페이지 통계              |  O   |                                                    |
+| 10  | 사용자 | `GET`    | `/users/notification-settings`     | 알림 설정 조회               |  O   |                                                    |
+| 11  | 사용자 | `PATCH`  | `/users/notification-settings`     | 알림 설정 수정               |  O   |                                                    |
+| 12  | 작물   | `GET`    | `/crops`                           | 작물 목록 조회               |  O   |                                                    |
+| 13  | 진단   | `POST`   | `/diagnoses`                       | 이미지 진단 요청             |      | AI 모델 연동 필요                                  |
+| 14  | 기록   | `GET`    | `/diagnoses`                       | 진단 기록 목록 (필터+페이징) |  O   |                                                    |
+| 15  | 기록   | `GET`    | `/diagnoses/{id}`                  | 진단 상세 조회               |  O   |                                                    |
+| 16  | 기록   | `PATCH`  | `/diagnoses/{id}/treatment-status` | 방제 상태 변경               |  O   |                                                    |
+| 17  | 기록   | `GET`    | `/diagnoses/{id}/similar-cases`    | 유사 사례 조회               |  O   |                                                    |
+| 18  | 캘린더 | `GET`    | `/calendar/diagnoses`              | 월별 캘린더 기록             |  O   |                                                    |
+| 19  | 캘린더 | `GET`    | `/calendar/diagnoses/{date}`       | 특정 날짜 기록               |  O   |                                                    |
+| 20  | 통계   | `GET`    | `/diagnoses/stats/monthly`         | 월별 통계                    |  O   |                                                    |
+| 21  | 기상   | `GET`    | `/weather/{city}/{district}`       | 지역별 기상 조회             |      | 기상청 API 연동 필요                               |
+| 22  | 챗봇   | `POST`   | `/chat/sessions`                   | 채팅 세션 생성               |  O   |                                                    |
+| 23  | 챗봇   | `GET`    | `/chat/sessions`                   | 세션 목록 조회               |  O   |                                                    |
+| 24  | 챗봇   | `GET`    | `/chat/sessions/{id}/messages`     | 채팅 이력 조회               |  O   |                                                    |
+| 25  | 챗봇   | `POST`   | `/chat/sessions/{id}/messages`     | 메시지 전송                  |  O   |                                                    |
 
 ### 미구현 사유 요약
 
-| 도메인 | 미구현 엔드포인트 수 | 사유                                             |
-| ------ | :------------------: | ------------------------------------------------ |
-| 진단   |         1개          | AI 진단 모델(이미지 분석) 외부 연동 필요         |
-| 기상   |         1개          | 기상청 단기예보 API 외부 연동 필요               |
-| 챗봇   |         0개          | 메시지 전송 구현 완료 (AI 응답 생성은 추후 연동) |
+| 도메인 | 미구현 엔드포인트 수 | 사유                                     |
+| ------ | :------------------: | ---------------------------------------- |
+| 진단   |         1개          | AI 진단 모델(이미지 분석) 외부 연동 필요 |
+| 기상   |         1개          | 기상청 단기예보 API 외부 연동 필요       |
+| 챗봇   |         0개          | AI 응답 생성 포함 구현 완료              |
+
+---
+
+## 공통 응답 래퍼
+
+인증(`/auth/**`)과 작물(`/crops`) 엔드포인트를 제외한 모든 응답은 `ApiResponse` 래퍼로 감싸서 반환한다.
+
+```json
+{
+  "success": true,
+  "data": { ... }
+}
+```
+
+실패 시:
+
+```json
+{
+  "success": false,
+  "message": "에러 메시지"
+}
+```
+
+> 아래 각 엔드포인트의 Response 예시는 `data` 내부 값만 표기한다.
 
 ---
 
@@ -59,6 +83,8 @@
 
 ## 인증
 
+> 인증 엔드포인트는 `ApiResponse` 래퍼 없이 응답한다.
+
 ### 회원가입
 
 `POST /auth/signup`
@@ -76,15 +102,15 @@
 }
 ```
 
-**Response**
+**Response** `201 Created`
 
 ```json
 {
-  "userId": 1
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "farmer.kim@example.com",
+  "name": "김농부"
 }
 ```
-
-> refreshToken은 응답 body가 아니라 `Set-Cookie` 헤더(HttpOnly)로 전달된다.
 
 ---
 
@@ -101,16 +127,16 @@
 }
 ```
 
-**Response**
+**Response** `200 OK`
 
 ```json
 {
-  "accessToken": "...",
-  "user": { ... }
+  "accessToken": "eyJhbGciOiJIUzUxMiJ9...",
+  "tokenType": "Bearer"
 }
 ```
 
-> accessToken만 body로 반환된다. refreshToken은 `Set-Cookie` 헤더(HttpOnly)로 전달되므로 클라이언트 JS는 접근/저장하지 않는다.
+> refreshToken은 `Set-Cookie` 헤더(HttpOnly, Secure, SameSite=Strict)로 전달된다.
 
 ---
 
@@ -122,9 +148,11 @@
 
 없음
 
-**Response**
+> refreshToken은 쿠키에서 읽는다. 쿠키가 없어도 정상 처리된다.
 
-`204 No Content` (body 없음). refreshToken 쿠키를 만료시킨다.
+**Response** `204 No Content`
+
+응답 본문 없음.
 
 ---
 
@@ -134,17 +162,18 @@
 
 **Request**
 
-없음 (refreshToken은 HttpOnly 쿠키에서 읽는다)
+없음 (refreshToken은 쿠키에서 읽음)
 
-**Response**
+**Response** `200 OK`
 
 ```json
 {
-  "accessToken": "..."
+  "accessToken": "eyJhbGciOiJIUzUxMiJ9...",
+  "tokenType": "Bearer"
 }
 ```
 
-> 새 refreshToken은 다시 `Set-Cookie`(HttpOnly)로 회전 발급된다.
+> 새 refreshToken은 `Set-Cookie` 헤더로 재발급된다.
 
 ---
 
@@ -162,7 +191,7 @@
 
 ```json
 {
-  "id": 1,
+  "id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "김농부",
   "email": "farmer.kim@example.com",
   "phone": "010-1234-5678",
@@ -193,10 +222,11 @@
 
 ```json
 {
-  "id": 1,
-  "updated": true
+  "success": true
 }
 ```
+
+> `data` 없이 성공 여부만 반환한다.
 
 ---
 
@@ -217,7 +247,7 @@
 
 ```json
 {
-  "updated": true
+  "success": true
 }
 ```
 
@@ -239,7 +269,7 @@
 
 ```json
 {
-  "deleted": true
+  "success": true
 }
 ```
 
@@ -303,13 +333,15 @@
 
 ```json
 {
-  "updated": true
+  "success": true
 }
 ```
 
 ---
 
 ## 작물
+
+> 작물 엔드포인트는 `ApiResponse` 래퍼 없이 응답한다.
 
 ### 작물 목록 조회
 
@@ -324,15 +356,7 @@
 ```json
 [
   { "id": 1, "name": "고추" },
-  { "id": 2, "name": "토마토" },
-  { "id": 3, "name": "딸기" },
-  { "id": 4, "name": "오이" },
-  { "id": 5, "name": "감자" },
-  { "id": 6, "name": "배추" },
-  { "id": 7, "name": "상추" },
-  { "id": 8, "name": "파프리카" },
-  { "id": 9, "name": "가지" },
-  { "id": 10, "name": "수박" }
+  { "id": 2, "name": "토마토" }
 ]
 ```
 
@@ -464,30 +488,6 @@ Query Parameters: `cropId`, `severity`, `treatmentStatus`, `startDate`, `endDate
         }
       ],
       "source": "농촌진흥청 병해충 관리 지침"
-    },
-    {
-      "id": 2,
-      "diseaseName": "Downy Mildew",
-      "diseaseNameKr": "노균병",
-      "confidence": 78.0,
-      "severity": "보통",
-      "description": "잎 뒷면에 흰 곰팡이가 발생하며, 습도 관리가 필요합니다.",
-      "lesionArea": {
-        "x": 55.0,
-        "y": 40.0,
-        "w": 25.0,
-        "h": 28.0
-      },
-      "rank": 2,
-      "treatmentSteps": [
-        {
-          "stepOrder": 1,
-          "title": "습도 관리",
-          "description": "포장 내 습도를 60% 이하로 유지",
-          "chemical": null
-        }
-      ],
-      "source": "농촌진흥청 병해충 관리 지침"
     }
   ]
 }
@@ -511,9 +511,7 @@ Query Parameters: `cropId`, `severity`, `treatmentStatus`, `startDate`, `endDate
 
 ```json
 {
-  "id": 101,
-  "treatmentStatus": "방제 완료",
-  "updated": true
+  "success": true
 }
 ```
 
@@ -544,18 +542,6 @@ Query Parameters: `cropId`, `severity`, `treatmentStatus`, `startDate`, `endDate
       "precipitation": 5.0
     },
     "diagnosedAt": "2026-05-10T14:00:00+09:00"
-  },
-  {
-    "id": 202,
-    "location": "충남 천안시",
-    "cropName": "고추",
-    "severity": "심각",
-    "weather": {
-      "temperature": 25.0,
-      "humidity": 90,
-      "precipitation": 15.0
-    },
-    "diagnosedAt": "2026-05-08T09:30:00+09:00"
   }
 ]
 ```
@@ -570,7 +556,7 @@ Query Parameters: `cropId`, `severity`, `treatmentStatus`, `startDate`, `endDate
 
 **Request**
 
-Query Parameters: `year=2026&month=5`
+Query Parameters: `year=2026&month=5` (필수)
 
 **Response**
 
@@ -621,14 +607,13 @@ Path Parameter: `2026-05-15`
 
 **Request**
 
-Query Parameters: `year=2026`
+Query Parameters: `year=2026` (필수)
 
 **Response**
 
 ```json
 [
   {
-    "id": 1,
     "month": 1,
     "totalCount": 3,
     "severeCount": 1,
@@ -673,7 +658,7 @@ Path Parameters: `city=서울특별시`, `district=강남구`
 
 ```json
 {
-  "diagnosisId": 101,
+  "diagnosisId": "550e8400-e29b-41d4-a716-446655440000",
   "type": "diagnosis"
 }
 ```
@@ -682,14 +667,16 @@ Path Parameters: `city=서울특별시`, `district=강남구`
 >
 > `type`: `diagnosis` (진단 연계) | `free` (자유 채팅)
 
-**Response**
+**Response** `201 Created`
 
 ```json
 {
-  "sessionId": "sess-001",
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000",
   "type": "diagnosis",
-  "diagnosisId": 101,
-  "createdAt": "2026-05-16T10:00:00+09:00"
+  "diagnosisId": "550e8400-e29b-41d4-a716-446655440000",
+  "lastMessage": null,
+  "createdAt": "2026-05-16T10:00:00",
+  "updatedAt": null
 }
 ```
 
@@ -708,20 +695,12 @@ Path Parameters: `city=서울특별시`, `district=강남구`
 ```json
 [
   {
-    "sessionId": "sess-001",
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
     "type": "diagnosis",
-    "diagnosisId": 101,
+    "diagnosisId": "550e8400-e29b-41d4-a716-446655440000",
     "title": "고추 탄저병 상담",
     "lastMessage": "탄저병이면 당장 약을...",
-    "updatedAt": "2026-05-16T10:33:00+09:00"
-  },
-  {
-    "sessionId": "sess-002",
-    "type": "free",
-    "diagnosisId": null,
-    "title": "고추 재배 질문",
-    "lastMessage": "고추 재배 시 주의사항은...",
-    "updatedAt": "2026-05-15T14:20:00+09:00"
+    "updatedAt": "2026-05-16T10:33:00"
   }
 ]
 ```
@@ -734,25 +713,27 @@ Path Parameters: `city=서울특별시`, `district=강남구`
 
 **Request**
 
-Query Parameters: `diagnosisId=101`
+없음
 
 **Response**
 
 ```json
 [
   {
-    "id": "msg-001",
+    "id": "550e8400-e29b-41d4-a716-446655440000",
     "role": "ai",
     "text": "안녕하세요! 저는 농업 AI 도우미입니다...",
     "verified": true,
     "source": "농촌진흥청 병해충 관리 지침",
-    "timestamp": "10:32"
+    "createdAt": "2026-05-16T10:32:00"
   },
   {
-    "id": "msg-002",
+    "id": "550e8400-e29b-41d4-a716-446655440001",
     "role": "user",
     "text": "탄저병이면 당장 약을 써야 하나요?",
-    "timestamp": "10:33"
+    "verified": null,
+    "source": null,
+    "createdAt": "2026-05-16T10:33:00"
   }
 ]
 ```
@@ -767,20 +748,19 @@ Query Parameters: `diagnosisId=101`
 
 ```json
 {
-  "diagnosisId": 101,
   "message": "탄저병이면 당장 약을 써야 하나요?"
 }
 ```
 
-**Response**
+**Response** `201 Created`
 
 ```json
 {
-  "id": "msg-001",
+  "id": "550e8400-e29b-41d4-a716-446655440000",
   "role": "ai",
   "text": "네, 탄저병은 빠른 방제가 매우 중요합니다...",
   "verified": true,
   "source": "농촌진흥청 병해충 관리 지침",
-  "timestamp": "10:33"
+  "createdAt": "2026-05-16T10:33:00"
 }
 ```

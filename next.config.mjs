@@ -23,6 +23,11 @@ const nextConfig = {
         protocol: "https",
         hostname: "example.com",
       },
+      // 실제 진단 이미지 스토리지(GCS). 버킷: sdg-diagnosis-images
+      {
+        protocol: "https",
+        hostname: "storage.googleapis.com",
+      },
     ],
   },
   async rewrites() {

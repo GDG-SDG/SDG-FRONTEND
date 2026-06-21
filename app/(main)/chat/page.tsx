@@ -23,6 +23,8 @@ import {
 } from "@/lib/api/chat";
 import { useChatSessions } from "@/lib/queries/useChat";
 import { useDiagnosisDetail } from "@/lib/queries/useDiagnoses";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queries/keys";
 
 const nowHHMM = () =>
   new Date().toLocaleTimeString("ko-KR", {
@@ -164,6 +166,7 @@ function ChatBubble({
 
 function ChatbotContent() {
   const { data: sessions } = useChatSessions();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   // 진단 상세에서 "AI 상담 시작하기"로 진입 시 ?diagnosisId=<id> 로 컨텍스트 전달.
   // 실 백엔드 진단 id는 UUID 문자열이므로 숫자로 변환하지 않고 그대로 사용한다.
@@ -188,27 +191,9 @@ function ChatbotContent() {
   // 진단별 환영 메시지를 한 번만 주입하기 위한 가드.
   const greetedDiagnosisRef = useRef<string | null>(null);
 
-  // 진입 시 세션 생성. diagnosisId가 있으면 진단 연계 세션(type: "diagnosis")으로
-  // 컨텍스트를 잇고, 환영 메시지는 진단 상세 기반으로 아래 effect에서 구성한다.
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const session = entryDiagnosisId
-        ? await createChatSession({
-            diagnosisId: entryDiagnosisId,
-            type: "diagnosis",
-          })
-        : await createChatSession({ type: "free" });
-      if (!mounted) return;
-      setSessionId(session.sessionId);
-      if (!entryDiagnosisId) {
-        setMessages(await getChatMessages(session.sessionId));
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [entryDiagnosisId]);
+  // 세션은 첫 메시지를 보낼 때 생성한다(lazy 생성). 진입만 하고 대화하지 않으면
+  // 빈 세션이 서버에 쌓이므로 여기서 미리 만들지 않는다.
+  // 진단 연계 진입 시 환영 메시지는 아래 effect가 진단 상세로 구성한다.
 
   // 진단 상세가 도착하면 진단 맥락 환영 메시지로 대화를 시작한다.
   // 진입 세션(entryDiagnosisId)에 대해서만, 진단당 1회만 주입한다
@@ -237,7 +222,7 @@ function ChatbotContent() {
   }, [messages, isTyping]);
 
   const handleSend = async (text: string) => {
-    if (!text.trim() || isTyping || !sessionId) return;
+    if (!text.trim() || isTyping) return;
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       role: "user",
@@ -248,23 +233,50 @@ function ChatbotContent() {
     setInput("");
     setIsTyping(true);
     try {
+      // 첫 메시지일 때만 세션을 생성한다(lazy) — 빈 세션이 쌓이지 않도록.
+      let sid = sessionId;
+      if (!sid) {
+        const session = sessionDiagnosisId
+          ? await createChatSession({
+              diagnosisId: sessionDiagnosisId,
+              type: "diagnosis",
+            })
+          : await createChatSession({ type: "free" });
+        sid = session.sessionId;
+        setSessionId(sid);
+      }
       const aiMsg = await sendChatMessage({
-        sessionId,
+        sessionId: sid,
         diagnosisId: sessionDiagnosisId ?? undefined,
         message: text,
       });
       setMessages((prev) => [...prev, aiMsg]);
+      // 새로 생성된 세션이 대화 기록 목록에 반영되도록 갱신.
+      queryClient.invalidateQueries({ queryKey: queryKeys.chatSessions });
+    } catch {
+      // 세션 생성·메시지 전송 실패 시 사용자 메시지는 남겨두고
+      // 안내 버블을 띄워 재시도하도록 한다(요청이 조용히 사라지지 않게).
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `err-${Date.now()}`,
+          role: "ai",
+          text: "메시지를 전송하지 못했어요. 잠시 후 다시 보내주세요.",
+          timestamp: nowHHMM(),
+        },
+      ]);
     } finally {
       setIsTyping(false);
     }
   };
 
-  const handleNewChat = async () => {
+  const handleNewChat = () => {
     setShowHistoryMenu(false);
-    const session = await createChatSession({ type: "free" });
-    setSessionId(session.sessionId);
+    // 빈 세션을 만들지 않는다 — 첫 메시지를 보내면 그때 새 세션이 생성된다.
+    setSessionId(null);
     setSessionDiagnosisId(null);
-    setMessages(await getChatMessages(session.sessionId));
+    setMessages([]);
+    greetedDiagnosisRef.current = null;
   };
 
   const handleSelectSession = async (sid: string) => {
@@ -275,6 +287,9 @@ function ChatbotContent() {
     setSessionDiagnosisId(nextDiagnosisId);
     setMessages(await getChatMessages(sid, nextDiagnosisId ?? undefined));
   };
+
+  // 메시지가 없는 빈 세션(lastMessage 없음)은 대화 기록에서 숨긴다.
+  const visibleSessions = (sessions ?? []).filter((s) => s.lastMessage);
 
   // 현재 세션이 진단 연계면 병명 맞춤 질문, 아니면 기본 빠른 질문.
   const quickQuestions =
@@ -318,14 +333,14 @@ function ChatbotContent() {
                   최근 대화
                 </p>
               </div>
-              {(sessions ?? []).length === 0 ? (
+              {visibleSessions.length === 0 ? (
                 <div className="px-3 py-4">
                   <p style={{ fontSize: "12px", color: "#9E9E9E" }}>
                     대화 기록이 없습니다
                   </p>
                 </div>
               ) : (
-                (sessions ?? []).map((session) => (
+                visibleSessions.map((session) => (
                   <button
                     key={session.sessionId}
                     onClick={() => handleSelectSession(session.sessionId)}

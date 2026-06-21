@@ -3,7 +3,10 @@
 //    더 구체적인 calendar 핸들러를 diagnoses 보다 먼저 배치한다.
 import { http, HttpResponse } from "msw";
 import type { Severity, TreatmentStatus } from "@/lib/types/common";
-import type { TreatmentStatusUpdate } from "@/lib/types/diagnosis";
+import type {
+  DiagnoseResponse,
+  TreatmentStatusUpdate,
+} from "@/lib/types/diagnosis";
 import type { ChatType } from "@/lib/types/chat";
 import type {
   NotificationSettings,
@@ -81,6 +84,34 @@ export const handlers = [
     const detail = MOCK_DIAGNOSIS_DETAILS[Number(params.id)];
     if (!detail) return new HttpResponse(null, { status: 404 });
     return HttpResponse.json(detail);
+  }),
+  // 이미지 진단 요청 — multipart 업로드를 받아 상세 전체를 반환.
+  // 실제 백엔드는 POST 응답으로 상세(results[])를 그대로 주고 id는 UUID 문자열이다.
+  http.post("*/diagnoses", () => {
+    const detail = MOCK_DIAGNOSIS_DETAILS[101];
+    const res: DiagnoseResponse = {
+      id: String(detail.id),
+      cropName: detail.cropName,
+      imageUrl: detail.imageUrl,
+      location: detail.location,
+      severity: detail.severity,
+      treatmentStatus: detail.treatmentStatus,
+      diagnosedAt: detail.diagnosedAt,
+      weather: detail.weather,
+      results: detail.results.map((r) => ({
+        id: String(r.id),
+        diseaseName: r.diseaseName,
+        diseaseNameKr: r.diseaseNameKr,
+        confidence: r.confidence,
+        severity: r.severity,
+        description: r.description,
+        lesionArea: r.lesionArea,
+        rank: r.rank,
+        treatmentSteps: r.treatmentSteps ?? [],
+        source: r.source,
+      })),
+    };
+    return HttpResponse.json(res, { status: 201 });
   }),
   http.get("*/diagnoses", ({ request }) => {
     const url = new URL(request.url);

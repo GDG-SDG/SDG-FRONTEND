@@ -162,6 +162,57 @@ export function DiseaseDetailModal({
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto">
+          {/* 분석 사진 — 병변 영역(lesionArea)을 박스로 오버레이 */}
+          {detail.imageUrl && (
+            <div
+              className="px-4 pt-3"
+              style={{ borderBottom: "1px solid rgba(45,122,62,0.08)" }}
+            >
+              <div
+                className="relative w-full rounded-xl overflow-hidden"
+                style={{ aspectRatio: "4 / 3", backgroundColor: "#1a1a1a" }}
+              >
+                <img
+                  src={detail.imageUrl}
+                  alt={`${topResult.diseaseNameKr} 분석 사진`}
+                  className="w-full h-full object-cover"
+                />
+                {detail.results
+                  .filter((r) => r.lesionArea)
+                  .map((r) => {
+                    const c = getSeverityColor(r.severity);
+                    return (
+                      <div
+                        key={r.id}
+                        className="absolute"
+                        style={{
+                          left: `${r.lesionArea!.x}%`,
+                          top: `${r.lesionArea!.y}%`,
+                          width: `${r.lesionArea!.w}%`,
+                          height: `${r.lesionArea!.h}%`,
+                          border: `2px solid ${c.dot}`,
+                          borderRadius: "4px",
+                          backgroundColor: `${c.dot}26`,
+                        }}
+                      >
+                        <span
+                          className="absolute -top-5 left-0 px-1.5 py-0.5 rounded whitespace-nowrap"
+                          style={{
+                            backgroundColor: c.dot,
+                            fontSize: "10px",
+                            fontWeight: 700,
+                            color: r.severity === "보통" ? "#333" : "white",
+                          }}
+                        >
+                          {r.diseaseNameKr}
+                        </span>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+
           {/* 병해 설명 */}
           <div
             className="px-4 py-3"
@@ -242,62 +293,66 @@ export function DiseaseDetailModal({
               💊 회복 및 방제 방법
             </h4>
             <div className="space-y-2">
-              {(topResult.treatmentSteps ?? []).map((step) => (
-                <div key={step.stepOrder} className="flex items-start gap-2">
-                  <div
-                    className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{
-                      backgroundColor: BRAND_GREEN,
-                      fontSize: "9px",
-                      fontWeight: 700,
-                      color: "white",
-                    }}
-                  >
-                    {step.stepOrder}
-                  </div>
-                  <div className="flex-1">
-                    <p
+              {(topResult.treatmentSteps ?? []).length === 0 ? (
+                <p
+                  style={{
+                    fontSize: "11px",
+                    color: "#9E9E9E",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  아직 등록된 회복·방제 방법이 없습니다. AI 상담으로 맞춤
+                  방제법을 확인해 보세요.
+                </p>
+              ) : (
+                (topResult.treatmentSteps ?? []).map((step) => (
+                  <div key={step.stepOrder} className="flex items-start gap-2">
+                    <div
+                      className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
                       style={{
-                        fontSize: "11px",
+                        backgroundColor: BRAND_GREEN,
+                        fontSize: "9px",
                         fontWeight: 700,
-                        color: "#1a1a1a",
-                        lineHeight: 1.6,
+                        color: "white",
                       }}
                     >
-                      {step.title}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: "11px",
-                        color: "#333",
-                        lineHeight: 1.6,
-                      }}
-                    >
-                      {step.description}
-                    </p>
-                    {step.chemical && (
+                      {step.stepOrder}
+                    </div>
+                    <div className="flex-1">
                       <p
                         style={{
-                          fontSize: "10px",
-                          color: ACCENT_ORANGE,
-                          marginTop: "2px",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          color: "#1a1a1a",
+                          lineHeight: 1.6,
                         }}
                       >
-                        💊 {step.chemical}
+                        {step.title}
                       </p>
-                    )}
+                      <p
+                        style={{
+                          fontSize: "11px",
+                          color: "#333",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {step.description}
+                      </p>
+                      {step.chemical && (
+                        <p
+                          style={{
+                            fontSize: "10px",
+                            color: ACCENT_ORANGE,
+                            marginTop: "2px",
+                          }}
+                        >
+                          💊 {step.chemical}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-            <div
-              className="mt-3 px-3 py-2 rounded-lg flex items-center gap-2"
-              style={{ backgroundColor: "rgba(45,122,62,0.07)" }}
-            >
-              <CheckCircle size={12} style={{ color: BRAND_GREEN }} />
-              <p style={{ fontSize: "11px", color: "#4d6b56" }}>
-                출처: {topResult.source}
-              </p>
+                ))
+              )}
             </div>
           </div>
         </div>

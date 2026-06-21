@@ -301,8 +301,18 @@ export default function MyPage() {
                       padding: "4px 8px",
                     }}
                   />
-                  <Bar dataKey="총진단" fill="#2D7A3E" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="심각" fill="#F44336" radius={[3, 3, 0, 0]} />
+                  <Bar
+                    dataKey="총진단"
+                    fill="#2D7A3E"
+                    radius={[3, 3, 0, 0]}
+                    maxBarSize={24}
+                  />
+                  <Bar
+                    dataKey="심각"
+                    fill="#F44336"
+                    radius={[3, 3, 0, 0]}
+                    maxBarSize={24}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
