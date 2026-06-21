@@ -69,6 +69,34 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // USE_MOCK 구간에서는 MSW 워커가 준비된 뒤에 앱을 렌더
   const [mockReady, setMockReady] = useState(!USE_MOCK);
 
+  // iOS Safari는 viewport user-scalable=no를 무시하므로 확대/축소 제스처를 직접 차단한다.
+  // (핀치 줌·더블탭 줌·gesture 이벤트 모두 preventDefault)
+  useEffect(() => {
+    const preventGesture = (e: Event) => e.preventDefault();
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 1) e.preventDefault();
+    };
+    let lastTouchEnd = 0;
+    const onTouchEnd = (e: TouchEvent) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) e.preventDefault();
+      lastTouchEnd = now;
+    };
+    const opts: AddEventListenerOptions = { passive: false };
+    document.addEventListener("gesturestart", preventGesture, opts);
+    document.addEventListener("gesturechange", preventGesture, opts);
+    document.addEventListener("gestureend", preventGesture, opts);
+    document.addEventListener("touchmove", onTouchMove, opts);
+    document.addEventListener("touchend", onTouchEnd, opts);
+    return () => {
+      document.removeEventListener("gesturestart", preventGesture, opts);
+      document.removeEventListener("gesturechange", preventGesture, opts);
+      document.removeEventListener("gestureend", preventGesture, opts);
+      document.removeEventListener("touchmove", onTouchMove, opts);
+      document.removeEventListener("touchend", onTouchEnd, opts);
+    };
+  }, []);
+
   // accessToken은 메모리 보관이라 새로고침 시 사라진다.
   // 부팅 시 refreshToken(HttpOnly 쿠키)으로 silent refresh 해서 로그인 상태를 복구한다.
   const [authReady, setAuthReady] = useState(false);

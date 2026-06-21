@@ -27,6 +27,13 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#2D7A3E",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  minimumScale: 1,
+  userScalable: false,
+  // safe-area-inset(env)이 실제로 적용되도록 cover 지정 — 미설정 시 inset이 0이 된다.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

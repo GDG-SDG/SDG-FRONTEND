@@ -30,6 +30,10 @@ export default function MainLayout({
 
   const isActive = useCallback((path: string) => pathname === path, [pathname]);
 
+  // 대시보드는 상단 헤더(기록)가 화면 최상단에 붙어야 하므로 레이아웃 패딩을 주지 않고
+  // 헤더가 직접 safe-area를 흡수한다. 그 외 페이지는 기존 상단 여백 유지.
+  const isDashboard = pathname === "/dashboard";
+
   return (
     <div
       className="page-bg relative flex flex-col overflow-hidden"
@@ -43,7 +47,9 @@ export default function MainLayout({
           이 영역 내부에서만 스크롤되도록 한다 (nav 고정). */}
       <div
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
-        style={{ paddingTop: "max(env(safe-area-inset-top), 16px)" }}
+        style={{
+          paddingTop: isDashboard ? 0 : "max(env(safe-area-inset-top), 16px)",
+        }}
       >
         {children}
       </div>
