@@ -190,6 +190,8 @@ body {
   inset: 0;
   overflow: hidden;
   overscroll-behavior: none;
+  /* 핀치/더블탭 확대 차단 (스크롤·탭은 허용). JS 가드와 함께 동작. */
+  touch-action: pan-x pan-y;
 }
 
 /* No-radius variants for sticky bars where rounded edges would not align */

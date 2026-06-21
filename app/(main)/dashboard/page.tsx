@@ -41,7 +41,10 @@ export default function DashboardPage() {
       {/* Scrollable content */}
       <div className="min-h-0 flex-1 overflow-y-auto">
         {/* Header */}
-        <div className="glass-bar-top px-5 pt-4 pb-3 flex-shrink-0 sticky top-0 z-20">
+        <div
+          className="glass-bar-top px-5 pb-3 flex-shrink-0 sticky top-0 z-20"
+          style={{ paddingTop: "max(env(safe-area-inset-top), 16px)" }}
+        >
           <div className="flex items-center justify-between mb-3">
             <h1
               style={{
