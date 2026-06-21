@@ -2,6 +2,8 @@
 import { apiFetch, buildQuery } from "./client";
 import type { Page, TreatmentStatus } from "@/lib/types/common";
 import type {
+  CreateDiagnosisRequest,
+  DiagnoseResponse,
   DiagnosisDetail,
   DiagnosisFilters,
   DiagnosisListItem,
@@ -9,6 +11,22 @@ import type {
   SimilarCase,
   TreatmentStatusUpdate,
 } from "@/lib/types/diagnosis";
+
+/** POST /diagnoses — 이미지 진단 요청 (multipart/form-data) */
+export async function createDiagnosis({
+  cropId,
+  location,
+  image,
+}: CreateDiagnosisRequest): Promise<DiagnoseResponse> {
+  const form = new FormData();
+  form.append("cropId", String(cropId));
+  form.append("location", location);
+  form.append("image", image);
+  return apiFetch<DiagnoseResponse>("/diagnoses", {
+    method: "POST",
+    body: form,
+  });
+}
 
 /** GET /diagnoses — 진단 기록 목록 (필터 + 페이징) */
 export async function getDiagnoses(
@@ -26,8 +44,10 @@ export async function getDiagnosisDetail(
   return apiFetch<DiagnosisDetail>(`/diagnoses/${id}`);
 }
 
-/** GET /diagnoses/{id}/similar-cases — 유사 사례 조회 */
-export async function getSimilarCases(id: number): Promise<SimilarCase[]> {
+/** GET /diagnoses/{id}/similar-cases — 유사 사례 조회 (id는 number 또는 UUID 문자열) */
+export async function getSimilarCases(
+  id: string | number,
+): Promise<SimilarCase[]> {
   return apiFetch<SimilarCase[]>(`/diagnoses/${id}/similar-cases`);
 }
 

@@ -6,7 +6,7 @@ export const queryKeys = {
     ["diagnoses", "list", filters ?? {}] as const,
   diagnosisDetail: (id: string | number) =>
     ["diagnoses", "detail", id] as const,
-  similarCases: (id: number) => ["diagnoses", "similar", id] as const,
+  similarCases: (id: string | number) => ["diagnoses", "similar", id] as const,
   crops: ["crops"] as const,
   mypage: ["users", "mypage"] as const,
   mypageSummary: ["users", "mypage", "summary"] as const,
