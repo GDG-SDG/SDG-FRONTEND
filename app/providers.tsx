@@ -7,6 +7,53 @@ import { USE_MOCK } from "@/lib/api/client";
 import { refresh } from "@/lib/api/auth";
 import { setAccessToken } from "@/lib/auth/token";
 
+// 부팅(silent refresh) 동안 흰 화면 대신 보여줄 스플래시.
+// 콜드 스타트로 오래 걸리면 몇 초 뒤 안내 문구를 띄워 "멈춤"으로 보이지 않게 한다.
+function BootSplash() {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <div
+      className="page-bg flex flex-col items-center justify-center"
+      style={{ height: "100dvh", gap: "16px", padding: "0 32px" }}
+    >
+      <div
+        className="w-10 h-10 rounded-full border-4 spin-anim"
+        style={{
+          borderColor: "rgb(var(--brand-green) / 0.2)",
+          borderTopColor: "rgb(var(--brand-green))",
+        }}
+      />
+      <p
+        style={{
+          fontSize: "15px",
+          fontWeight: 700,
+          color: "rgb(var(--brand-green))",
+        }}
+      >
+        팜케어 AI
+      </p>
+      {slow && (
+        <p
+          className="text-center"
+          style={{
+            fontSize: "12px",
+            color: "rgb(var(--glass-text) / 0.6)",
+            lineHeight: 1.5,
+          }}
+        >
+          서버를 준비하고 있어요.
+          <br />
+          처음 접속은 조금 더 걸릴 수 있어요.
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
     () =>
@@ -62,7 +109,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
     };
   }, [mockReady]);
 
-  if (!mockReady || !authReady) return null;
+  // 부팅 silent refresh가 끝나기 전까지 흰 화면 대신 스플래시 노출.
+  if (!mockReady || !authReady) return <BootSplash />;
 
   return (
     <QueryClientProvider client={queryClient}>
