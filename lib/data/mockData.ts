@@ -249,6 +249,10 @@ export const getSeverityColor = (severity: Severity) => {
       return { bg: "#FFF8E1", text: "#F57F17", dot: "#FFC107" };
     case "심각":
       return { bg: "#FFEBEE", text: "#C62828", dot: "#F44336" };
+    default:
+      // 백엔드가 매핑 외 severity(혹은 null)를 줄 수 있어 안전한 중립 팔레트로 폴백.
+      // (없으면 colors.dot 접근에서 런타임 크래시가 난다)
+      return { bg: "#F5F5F5", text: "#616161", dot: "#9E9E9E" };
   }
 };
 

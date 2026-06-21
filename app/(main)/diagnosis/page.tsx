@@ -12,13 +12,35 @@ import {
   AlertTriangle,
   RotateCcw,
 } from "lucide-react";
-import { DIAGNOSIS_RECORDS, getSeverityColor } from "@/lib/data/mockData";
+import { getSeverityColor } from "@/lib/data/mockData";
+import { getCrops } from "@/lib/api/crop";
+import { resolveCurrentLocation } from "@/lib/api/geocode";
 import { useCrops } from "@/lib/queries/useCrops";
+import {
+  useCreateDiagnosis,
+  useSimilarCases,
+} from "@/lib/queries/useDiagnoses";
+import { useQueryClient } from "@tanstack/react-query";
+import type { DiagnoseResponse } from "@/lib/types/diagnosis";
+
+// 콜드 스타트 알림을 띄우기까지 대기 시간(ms). 첫 진단은 백엔드 콜드 스타트
+// + 모델 로딩으로 오래 걸릴 수 있어, 이 시간을 넘기면 안내 문구를 보여준다.
+const LONG_WAIT_MS = 15000;
 
 const BRAND_GREEN = "rgb(var(--brand-green))";
 const ACCENT_ORANGE = "rgb(var(--accent-orange))";
 
-type Stage = "ready" | "captured" | "analyzing" | "quick_result" | "complete";
+// GPS 권한 거부·역지오코딩 실패 시 사용할 폴백 지역 (POST /diagnoses location 필드)
+const DEFAULT_LOCATION = "경기도 이천시";
+
+type Stage = "ready" | "analyzing" | "complete";
+
+// 심각도별 병변 박스 색상
+function lesionColor(severity: string): string {
+  if (severity === "심각") return "#F44336";
+  if (severity === "보통") return "#FFC107";
+  return "#4CAF50";
+}
 
 export default function DiagnosisPage() {
   const router = useRouter();
@@ -28,15 +50,28 @@ export default function DiagnosisPage() {
   const [showCropDropdown, setShowCropDropdown] = useState(false);
   const [progress, setProgress] = useState(0);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  // POST /diagnoses 응답(상세 전체)을 그대로 보관해 결과 화면을 채운다.
+  const [result, setResult] = useState<DiagnoseResponse | null>(null);
+  // 분석이 오래(콜드 스타트) 걸릴 때 안내 문구 노출 여부.
+  const [longWait, setLongWait] = useState(false);
   const [timeStr, setTimeStr] = useState("");
+  // 진단에 보낼 위치. 진입 시 GPS로 해석하며, 해석 전/실패 시 폴백을 사용한다.
+  const [location, setLocation] = useState(DEFAULT_LOCATION);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
 
+  const queryClient = useQueryClient();
   const { data: crops } = useCrops();
-  const mockRecord = DIAGNOSIS_RECORDS[0];
-  const severityColors = getSeverityColor("심각");
+  const createDiagnosis = useCreateDiagnosis();
+  // 유사 사례는 POST 응답에 없으므로 진단 id(UUID)로 별도 조회 (실패해도 화면은 정상).
+  const { data: similarCases } = useSimilarCases(result?.id ?? null);
+
+  // 대표 결과(rank 1) — 없으면 첫 결과
+  const primary =
+    result?.results.find((r) => r.rank === 1) ?? result?.results[0] ?? null;
+  const severityColors = getSeverityColor(result?.severity ?? "경미");
 
   // 컴포넌트 unmount 시 생성한 objectURL 해제 (메모리 누수 방지)
   useEffect(() => {
@@ -71,32 +106,44 @@ export default function DiagnosisPage() {
     };
   }, []);
 
-  const startAnalysis = () => {
-    setStage("analyzing");
-    setProgress(0);
-    let prog = 0;
+  // 워밍업 핑 — 진단 페이지 진입 시 가벼운 요청(GET /crops)을 한 번 보내
+  // 백엔드 콜드 스타트를 사용자가 사진을 올리기 전에 미리 당겨둔다.
+  // (컨테이너 기동을 앞당기는 효과. AI 모델 로딩은 추론 시점에 일어나므로
+  //  완전한 제거는 백엔드 워밍업/min-instances가 필요하다.) 실패는 무시.
+  useEffect(() => {
+    getCrops().catch(() => {});
+  }, []);
+
+  // 진입 시 현재 위치(GPS)를 행정구역명으로 해석해 둔다. 권한 거부·실패 시 폴백 유지.
+  // 사진 촬영 시점에 이미 해석돼 있도록 미리 한 번만 시도한다.
+  useEffect(() => {
+    let active = true;
+    resolveCurrentLocation(DEFAULT_LOCATION).then((loc) => {
+      if (active) setLocation(loc);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // 분석(업로드+추론) 동안 진행률 애니메이션 — 완료 전까지 90%에서 대기
+  useEffect(() => {
+    if (stage !== "analyzing") return;
     const interval = setInterval(() => {
-      prog += Math.random() * 15 + 5;
-      if (prog >= 60) {
-        setProgress(60);
-        clearInterval(interval);
-        setStage("quick_result");
-        setTimeout(() => {
-          let prog2 = 60;
-          const interval2 = setInterval(() => {
-            prog2 += Math.random() * 10 + 5;
-            setProgress(Math.min(prog2, 100));
-            if (prog2 >= 100) {
-              clearInterval(interval2);
-              setStage("complete");
-            }
-          }, 200);
-        }, 2000);
-      } else {
-        setProgress(prog);
-      }
-    }, 150);
-  };
+      setProgress((prev) => (prev >= 90 ? 90 : prev + Math.random() * 12 + 4));
+    }, 180);
+    return () => clearInterval(interval);
+  }, [stage]);
+
+  // 분석이 LONG_WAIT_MS를 넘기면 "오래 걸릴 수 있다" 안내를 띄운다.
+  useEffect(() => {
+    if (stage !== "analyzing") {
+      setLongWait(false);
+      return;
+    }
+    const timer = setTimeout(() => setLongWait(true), LONG_WAIT_MS);
+    return () => clearTimeout(timer);
+  }, [stage]);
 
   const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -104,13 +151,41 @@ export default function DiagnosisPage() {
     e.target.value = "";
     if (!file || !isOnline) return;
 
+    const cropId = crops?.find((c) => c.name === selectedCrop)?.id;
+    if (!cropId) {
+      alert("작물 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
     if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
     const url = URL.createObjectURL(file);
     objectUrlRef.current = url;
 
     setCapturedImage(url);
-    setStage("captured");
-    setTimeout(() => startAnalysis(), 600);
+    setResult(null);
+    setProgress(0);
+    setStage("analyzing");
+
+    createDiagnosis.mutate(
+      { cropId, location, image: file },
+      {
+        onSuccess: (res) => {
+          // POST 응답이 상세 전체를 주므로 추가 조회 없이 바로 결과 표시.
+          setResult(res);
+          setProgress(100);
+          setStage("complete");
+        },
+        onError: () => {
+          // 콜드 스타트로 응답이 끊겨도 백엔드는 추론을 끝내고 기록을 저장했을 수
+          // 있다. 그래서 기록 목록을 갱신해 두고, 기록에서 확인하도록 안내한다.
+          queryClient.invalidateQueries({ queryKey: ["diagnoses", "list"] });
+          alert(
+            "분석이 오래 걸리고 있어요. 첫 진단은 1~2분 걸릴 수 있습니다.\n잠시 후 '기록'에서 결과를 확인하거나 다시 시도해주세요.",
+          );
+          reset();
+        },
+      },
+    );
   };
 
   const openCamera = () => {
@@ -131,6 +206,7 @@ export default function DiagnosisPage() {
     setStage("ready");
     setProgress(0);
     setCapturedImage(null);
+    setResult(null);
   };
 
   return (
@@ -200,7 +276,7 @@ export default function DiagnosisPage() {
               }}
             >
               <MapPin size={11} />
-              <span>이천시</span>
+              <span>{location.split(" ").pop() || location}</span>
             </div>
             <div
               className="flex items-center gap-1"
@@ -321,45 +397,42 @@ export default function DiagnosisPage() {
             />
 
             {stage === "complete" &&
-              mockRecord.results.map((result) => (
-                <div
-                  key={result.id}
-                  className="absolute"
-                  style={{
-                    left: `${result.lesionArea.x}%`,
-                    top: `${result.lesionArea.y}%`,
-                    width: `${result.lesionArea.w}%`,
-                    height: `${result.lesionArea.h}%`,
-                    border: `2px solid ${result.severity === "심각" ? "#F44336" : result.severity === "보통" ? "#FFC107" : "#4CAF50"}`,
-                    borderRadius: "4px",
-                    backgroundColor:
-                      result.severity === "심각"
-                        ? "rgba(244,67,54,0.15)"
-                        : result.severity === "보통"
-                          ? "rgba(255,193,7,0.15)"
-                          : "rgba(76,175,80,0.15)",
-                  }}
-                >
-                  <span
-                    className="absolute -top-5 left-0 px-1.5 py-0.5 rounded"
+              result?.results
+                .filter((r) => r.lesionArea)
+                .map((r) => (
+                  <div
+                    key={r.id}
+                    className="absolute"
                     style={{
+                      left: `${r.lesionArea!.x}%`,
+                      top: `${r.lesionArea!.y}%`,
+                      width: `${r.lesionArea!.w}%`,
+                      height: `${r.lesionArea!.h}%`,
+                      border: `2px solid ${lesionColor(r.severity)}`,
+                      borderRadius: "4px",
                       backgroundColor:
-                        result.severity === "심각"
-                          ? "#F44336"
-                          : result.severity === "보통"
-                            ? "#FFC107"
-                            : "#4CAF50",
-                      fontSize: "10px",
-                      fontWeight: 700,
-                      color: result.severity === "보통" ? "#333" : "white",
+                        r.severity === "심각"
+                          ? "rgba(244,67,54,0.15)"
+                          : r.severity === "보통"
+                            ? "rgba(255,193,7,0.15)"
+                            : "rgba(76,175,80,0.15)",
                     }}
                   >
-                    {result.diseaseKr}
-                  </span>
-                </div>
-              ))}
+                    <span
+                      className="absolute -top-5 left-0 px-1.5 py-0.5 rounded"
+                      style={{
+                        backgroundColor: lesionColor(r.severity),
+                        fontSize: "10px",
+                        fontWeight: 700,
+                        color: r.severity === "보통" ? "#333" : "white",
+                      }}
+                    >
+                      {r.diseaseNameKr}
+                    </span>
+                  </div>
+                ))}
 
-            {(stage === "analyzing" || stage === "quick_result") && (
+            {stage === "analyzing" && (
               <div
                 className="absolute inset-0 flex flex-col items-center justify-center"
                 style={{
@@ -367,94 +440,62 @@ export default function DiagnosisPage() {
                   backdropFilter: "blur(2px)",
                 }}
               >
-                {stage === "analyzing" ? (
-                  <>
-                    <div
-                      className="w-12 h-12 rounded-full border-4 mb-3 spin-anim"
-                      style={{
-                        borderColor: "rgba(255,255,255,0.3)",
-                        borderTopColor: "#FF6B35",
-                      }}
-                    />
-                    <p
-                      style={{
-                        color: "white",
-                        fontSize: "15px",
-                        fontWeight: 600,
-                      }}
-                    >
-                      AI가 분석하고 있습니다
-                    </p>
-                    <p
-                      style={{
-                        color: "rgba(255,255,255,0.6)",
-                        fontSize: "12px",
-                        marginTop: "4px",
-                      }}
-                    >
-                      잠시만 기다려 주세요...
-                    </p>
-                    <div
-                      className="mt-4 w-48 h-1.5 rounded-full"
-                      style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
-                    >
-                      <div
-                        className="h-full rounded-full transition-all duration-200"
-                        style={{
-                          width: `${progress}%`,
-                          backgroundColor: "#FF6B35",
-                        }}
-                      />
-                    </div>
-                    <p
-                      style={{
-                        color: "rgba(255,255,255,0.5)",
-                        fontSize: "11px",
-                        marginTop: "6px",
-                      }}
-                    >
-                      {Math.round(progress)}%
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center mb-2"
-                      style={{ backgroundColor: "#FFF3E0" }}
-                    >
-                      <AlertTriangle size={20} style={{ color: "#FF6B35" }} />
-                    </div>
-                    <p
-                      style={{
-                        color: "white",
-                        fontSize: "15px",
-                        fontWeight: 700,
-                      }}
-                    >
-                      이상 의심 부위 발견
-                    </p>
-                    <p
-                      style={{
-                        color: "rgba(255,255,255,0.7)",
-                        fontSize: "12px",
-                        marginTop: "4px",
-                      }}
-                    >
-                      정밀 분석 중...
-                    </p>
-                    <div
-                      className="mt-3 w-48 h-1.5 rounded-full"
-                      style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
-                    >
-                      <div
-                        className="h-full rounded-full transition-all duration-200"
-                        style={{
-                          width: `${progress}%`,
-                          backgroundColor: "#FFC107",
-                        }}
-                      />
-                    </div>
-                  </>
+                <div
+                  className="w-12 h-12 rounded-full border-4 mb-3 spin-anim"
+                  style={{
+                    borderColor: "rgba(255,255,255,0.3)",
+                    borderTopColor: "#FF6B35",
+                  }}
+                />
+                <p
+                  style={{ color: "white", fontSize: "15px", fontWeight: 600 }}
+                >
+                  AI가 분석하고 있습니다
+                </p>
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.6)",
+                    fontSize: "12px",
+                    marginTop: "4px",
+                  }}
+                >
+                  잠시만 기다려 주세요...
+                </p>
+                <div
+                  className="mt-4 w-48 h-1.5 rounded-full"
+                  style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+                >
+                  <div
+                    className="h-full rounded-full transition-all duration-200"
+                    style={{
+                      width: `${progress}%`,
+                      backgroundColor: "#FF6B35",
+                    }}
+                  />
+                </div>
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.5)",
+                    fontSize: "11px",
+                    marginTop: "6px",
+                  }}
+                >
+                  {Math.round(progress)}%
+                </p>
+                {longWait && (
+                  <p
+                    className="px-6 text-center"
+                    style={{
+                      color: "rgba(255,255,255,0.75)",
+                      fontSize: "11px",
+                      marginTop: "10px",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    첫 진단은 서버 준비로 1~2분 걸릴 수 있어요.
+                    <br />
+                    조금만 더 기다려 주세요.
+                  </p>
                 )}
               </div>
             )}
@@ -478,7 +519,7 @@ export default function DiagnosisPage() {
       </div>
 
       {/* Quick result summary */}
-      {stage === "complete" && (
+      {stage === "complete" && result && primary && (
         <div
           className="glass-card-strong mx-5 mt-3 rounded-2xl overflow-hidden flex flex-col"
           style={{
@@ -504,10 +545,12 @@ export default function DiagnosisPage() {
                   color: severityColors.text,
                 }}
               >
-                탄저병 (Anthracnose) - 심각
+                {primary.diseaseNameKr} ({primary.diseaseName}) -{" "}
+                {result.severity}
               </p>
               <p style={{ fontSize: "11px", color: severityColors.text }}>
-                신뢰도 92% · 고추 · 이천시
+                신뢰도 {primary.confidence}% · {result.cropName} ·{" "}
+                {result.location}
               </p>
             </div>
           </div>
@@ -528,9 +571,7 @@ export default function DiagnosisPage() {
                 🔬 병해 설명
               </h4>
               <p style={{ fontSize: "12px", color: "#333", lineHeight: 1.6 }}>
-                탄저병은 고추에서 가장 흔하게 발생하는 곰팡이성 병해로,
-                고온다습한 환경에서 급속히 확산됩니다. 열매 표면에 움푹 들어간
-                갈색 반점이 나타나며, 심한 경우 전체 과실이 썩게 됩니다.
+                {primary.description || "상세 설명이 제공되지 않았습니다."}
               </p>
             </div>
 
@@ -548,47 +589,34 @@ export default function DiagnosisPage() {
               >
                 📊 최근 유사 사례
               </h4>
-              <div className="space-y-2">
-                {[
-                  {
-                    region: "경기 여주시",
-                    env: "비닐하우스 재배 환경, 습도 85%, 온도 28°C",
-                    color: "#F44336",
-                  },
-                  {
-                    region: "충남 천안시",
-                    env: "노지 재배, 장마 기간 중 발병, 습도 90%",
-                    color: "#F44336",
-                  },
-                  {
-                    region: "경기 용인시",
-                    env: "시설재배, 통풍 불량, 밀식 환경",
-                    color: "#FFC107",
-                  },
-                  {
-                    region: "강원 홍천군",
-                    env: "노지 재배, 습도 75%, 조기 예방 살포",
-                    color: "#4CAF50",
-                  },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <div
-                      className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <p
-                      style={{
-                        fontSize: "11px",
-                        color: "#616161",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      <strong style={{ color: "#333" }}>{item.region}</strong> ·{" "}
-                      {item.env}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              {similarCases && similarCases.length > 0 ? (
+                <div className="space-y-2">
+                  {similarCases.map((item) => (
+                    <div key={item.id} className="flex items-start gap-2">
+                      <div
+                        className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0"
+                        style={{ backgroundColor: lesionColor(item.severity) }}
+                      />
+                      <p
+                        style={{
+                          fontSize: "11px",
+                          color: "#616161",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        <strong style={{ color: "#333" }}>
+                          {item.location}
+                        </strong>{" "}
+                        · {item.cropName} · {item.severity}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ fontSize: "11px", color: "#9E9E9E" }}>
+                  유사 사례가 없습니다
+                </p>
+              )}
             </div>
 
             <div className="px-4 py-3 pb-4">
@@ -602,37 +630,53 @@ export default function DiagnosisPage() {
               >
                 💊 회복 및 방제 방법
               </h4>
-              <div className="space-y-2">
-                {[
-                  "감염된 과실 및 잎 즉시 제거 후 소각 처리 (전염 차단)",
-                  "살균제 살포: 디페노코나졸 또는 프로피네브 수화제 (7일 간격 3회)",
-                  "통풍 개선 및 습도 관리 (70% 이하 유지), 과습 방지",
-                  "칼슘제 엽면 살포로 과피 강화, 저항성 증진",
-                ].map((step, i) => (
-                  <div key={i} className="flex items-start gap-2">
+              {primary.treatmentSteps && primary.treatmentSteps.length > 0 ? (
+                <div className="space-y-2">
+                  {primary.treatmentSteps.map((step) => (
                     <div
-                      className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                      style={{
-                        backgroundColor: BRAND_GREEN,
-                        fontSize: "9px",
-                        fontWeight: 700,
-                        color: "white",
-                      }}
+                      key={step.stepOrder}
+                      className="flex items-start gap-2"
                     >
-                      {i + 1}
+                      <div
+                        className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                        style={{
+                          backgroundColor: BRAND_GREEN,
+                          fontSize: "9px",
+                          fontWeight: 700,
+                          color: "white",
+                        }}
+                      >
+                        {step.stepOrder}
+                      </div>
+                      <p
+                        style={{
+                          fontSize: "11px",
+                          color: "#333",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        <strong>{step.title}</strong> — {step.description}
+                        {step.chemical ? ` (${step.chemical})` : ""}
+                      </p>
                     </div>
-                    <p
-                      style={{
-                        fontSize: "11px",
-                        color: "#333",
-                        lineHeight: 1.6,
-                      }}
-                    >
-                      {step}
-                    </p>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ fontSize: "11px", color: "#9E9E9E" }}>
+                  방제 정보가 없습니다
+                </p>
+              )}
+              {primary.source && (
+                <p
+                  style={{
+                    fontSize: "10px",
+                    color: "#9E9E9E",
+                    marginTop: "8px",
+                  }}
+                >
+                  출처: {primary.source}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -693,11 +737,10 @@ export default function DiagnosisPage() {
               다시
             </button>
             <button
-              // TODO(진단 API 연동): 현재 화면은 mock 시뮬레이션이라 실 숫자 진단 ID가
-              // 없다. POST /diagnoses로 실 진단 id가 생기면
-              // router.push(`/chat?diagnosisId=${id}`)로 컨텍스트를 전달한다.
-              // (chat 페이지는 ?diagnosisId 숫자값을 받아 type:"diagnosis" 세션을 만든다.)
-              onClick={() => router.push("/chat")}
+              // 실 진단 id(UUID)를 chat으로 전달 → type:"diagnosis" 세션이 생성된다.
+              onClick={() =>
+                router.push(result ? `/chat?diagnosisId=${result.id}` : "/chat")
+              }
               className="flex-1 py-3 rounded-xl"
               style={{
                 backgroundColor: "#2D7A3E",
@@ -717,11 +760,7 @@ export default function DiagnosisPage() {
                 color: "rgb(var(--glass-text) / 0.7)",
               }}
             >
-              {stage === "captured"
-                ? "사진 업로드 중..."
-                : stage === "analyzing"
-                  ? "AI 분석 중..."
-                  : "1차 결과 확인 중..."}
+              AI 분석 중...
             </p>
           </div>
         )}
