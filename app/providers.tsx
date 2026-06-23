@@ -34,7 +34,7 @@ function BootSplash() {
           color: "rgb(var(--brand-green))",
         }}
       >
-        팜케어 AI
+        Agriguard
       </p>
       {slow && (
         <p

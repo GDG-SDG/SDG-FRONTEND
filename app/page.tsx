@@ -39,7 +39,7 @@ export default function SplashPage() {
             className="text-2xl font-extrabold tracking-tight"
             style={{ color: "rgb(var(--glass-text) / 0.95)" }}
           >
-            팜케어 AI
+            Agriguard
           </div>
           <div
             className="text-sm font-medium"

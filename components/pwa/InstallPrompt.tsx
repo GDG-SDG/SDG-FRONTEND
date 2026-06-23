@@ -106,7 +106,7 @@ export function InstallPrompt() {
 
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-bold text-[#1a1a1a]">
-              팜케어 AI 앱으로 설치
+              Agriguard 앱으로 설치
             </p>
             {iosGuide ? (
               <p className="mt-0.5 flex items-center gap-1 text-[11px] text-[#616161]">
