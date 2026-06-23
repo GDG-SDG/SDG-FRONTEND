@@ -5,17 +5,14 @@ export default function AuthLayout({
 }) {
   return (
     <div
-      className="page-bg relative flex flex-col items-center overflow-y-auto"
-      style={{ minHeight: "100dvh" }}
+      className="page-bg relative flex flex-col items-center justify-center overflow-y-auto"
+      style={{
+        height: "100dvh",
+        paddingTop: "max(env(safe-area-inset-top), 32px)",
+        paddingBottom: "32px",
+      }}
     >
-      <div
-        className="flex w-full flex-1 flex-col items-center justify-center px-6"
-        style={{
-          paddingTop: "max(env(safe-area-inset-top), 32px)",
-          paddingBottom: "32px",
-          maxWidth: "440px",
-        }}
-      >
+      <div className="w-full px-6" style={{ maxWidth: "440px" }}>
         {children}
       </div>
     </div>
