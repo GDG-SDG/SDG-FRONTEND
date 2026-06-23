@@ -383,9 +383,9 @@ export default function MyPage() {
 
       {/* App version */}
       <div className="mx-4 mt-4 text-center">
-        <p style={{ fontSize: "11px", color: "#BDBDBD" }}>팜케어 AI v1.0.0</p>
+        <p style={{ fontSize: "11px", color: "#BDBDBD" }}>Agriguard v1.0.0</p>
         <p style={{ fontSize: "10px", color: "#E0E0E0", marginTop: "4px" }}>
-          © 2026 FarmCare AI. All rights reserved.
+          © 2026 Agriguard. All rights reserved.
         </p>
       </div>
 

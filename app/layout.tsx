@@ -10,14 +10,14 @@ const notoSansKR = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "팜케어 AI — 작물 질병 진단 서비스",
+  title: "Agriguard — 작물 질병 진단 서비스",
   description:
     "스마트폰 하나로 작물 질병을 진단하고 방제 시점을 예측하는 저비용 AI 농업 플랫폼",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "팜케어 AI",
+    title: "Agriguard",
   },
   icons: {
     icon: "/icons/icon-192.png",

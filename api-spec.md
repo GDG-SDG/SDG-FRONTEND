@@ -1,6 +1,6 @@
 # API 명세서
 
-> 팜케어 AI Backend API 명세서
+> Agriguard Backend API 명세서
 
 ## API 구현 현황
 

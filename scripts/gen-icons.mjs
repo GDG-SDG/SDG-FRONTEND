@@ -1,4 +1,4 @@
-// 팜케어 AI PWA 아이콘 생성기
+// Agriguard PWA 아이콘 생성기
 // 디자인: 세이지 그린 타일 + 흰색 라인 잎(Lucide `leaf`).
 // SVG 작성 → qlmanage(QuickLook)로 고해상도 렌더 → sips로 각 사이즈 변환 (macOS 도구만 사용).
 import { mkdirSync, writeFileSync, copyFileSync, rmSync } from "node:fs";

@@ -64,7 +64,7 @@ export default function LoginPage() {
           className="text-xl font-extrabold tracking-tight"
           style={{ color: "rgb(var(--glass-text) / 0.95)" }}
         >
-          팜케어 AI
+          Agriguard
         </div>
       </div>
 
