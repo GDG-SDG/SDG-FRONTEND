@@ -105,6 +105,17 @@
   background: rgba(45, 122, 62, 0.08) !important;
 }
 
+/* Recharts 차트 클릭/탭 시 표시되는 포커스 외곽선 제거 */
+.recharts-wrapper,
+.recharts-surface,
+.recharts-wrapper:focus,
+.recharts-surface:focus,
+.recharts-wrapper *:focus,
+.recharts-surface *:focus {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Liquid Glass color tokens — use as rgb(var(--glass-text) / <alpha>) */
 :root {
   --glass-text: 20 60 35;
