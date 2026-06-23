@@ -20,8 +20,8 @@
 ![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=nextdotjs&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
-![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-Radix-000000?style=flat-square&logo=shadcnui&logoColor=white)
 ![TanStack Query](https://img.shields.io/badge/TanStack_Query-v5-FF4154?style=flat-square&logo=reactquery&logoColor=white)
+![Serwist PWA](https://img.shields.io/badge/PWA-Serwist-5A0FC8?style=flat-square&logo=pwa&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?style=flat-square&logo=vercel&logoColor=white)
 
 <br/>
@@ -32,87 +32,82 @@
 
 ## 📌 프로젝트 개요
 
-**AgriGuard**는 농산물을 재배하는 개인 농업인을 위한 AI 기반 작물 병해충 진단 웹앱이다.
+**Agriguard**는 농산물을 재배하는 개인 농업인을 위한 AI 기반 작물 병해충 진단 웹앱이다.
 
-> 카메라로 작물 촬영 → 온디바이스(TFLite) 1차 진단 → 서버(YOLOv8) 정밀 진단 → Gemini RAG 챗봇 방제 상담
+> 사진 촬영/업로드 → 서버 정밀 진단 → 질병/방제 정보 제공 → AI 챗봇 방제 상담
 
-스마트팜 설비 없이 스마트폰 하나로 정밀 농업 의사결정을 지원한다.
+스마트팜 설비 없이 스마트폰 하나로 정밀 농업 의사결정을 지원하는 모바일 우선(PWA) 웹 애플리케이션이다.
 
 ---
 
-## 🏗️ 아키텍처 개요
+## ✨ 주요 기능
 
-```
-┌─────────────────────────────────────────────────┐
-│                AgriGuard Web (Next.js 14)         │
-│                                                  │
-│  ┌─────────────┐  ┌───────────────┐  ┌────────┐ │
-│  │  Camera /   │  │  TanStack     │  │Zustand │ │
-│  │  PWA 촬영   │  │  Query        │  │전역상태│ │
-│  │  (MediaAPI) │  │  (서버 캐싱)  │  │        │ │
-│  └──────┬──────┘  └───────┬───────┘  └────────┘ │
-│         └─────────────────┼──────────────────────┤
-│                    Axios + JWT 인터셉터           │
-└──────────────────────────┬──────────────────────┘
-                           │
-              ┌────────────┴────────────┐
-              ▼                         ▼
-       Spring Boot API           FastAPI (AI 서버)
-       (메인 백엔드)              (YOLOv8 · SAM2 · DINOv2)
-```
+- **사진 진단** — 작물 사진을 업로드하면 서버가 질병을 진단하고 신뢰도·방제 정보를 제공
+- **대시보드** — 최근 진단 기록, 지역 기상, 위험도 요약
+- **AI 챗봇** — 진단 결과 기반 방제 상담 (마크다운 응답 렌더링)
+- **캘린더** — 월별 진단/방제 기록 및 통계
+- **마이페이지** — 연간 진단 추이 차트, 내 정보·알림 설정 관리
+- **인증** — 회원가입 / 로그인 / 토큰 자동 재발급(silent refresh)
+- **PWA** — 홈 화면 설치, 오프라인 폴백 지원
 
 ---
 
 ## ⚙️ 기술 스택
 
-| 분류 | 기술 |
-|------|------|
-| Framework | Next.js 14 (App Router) |
-| Language | TypeScript 5.x |
-| Styling | Tailwind CSS 3.x |
-| UI Components | shadcn/ui (Radix UI 기반) |
-| 서버 상태 | TanStack Query v5 |
-| 전역 상태 | Zustand |
-| 폼 관리 | React Hook Form + Zod |
-| 애니메이션 | Framer Motion |
-| HTTP | Axios |
-| 차트 | Recharts |
-| 카메라 | MediaDevices API |
-| PWA | next-pwa |
-| Linter | Biome |
-| 배포 | Vercel (Preview / Production 분리) |
+| 분류       | 기술                                                     |
+| ---------- | -------------------------------------------------------- |
+| Framework  | Next.js 14 (App Router)                                  |
+| Language   | TypeScript 5.x                                           |
+| Styling    | Tailwind CSS 3.x + 커스텀 Liquid Glass 디자인 토큰       |
+| 서버 상태  | TanStack Query v5                                        |
+| HTTP       | 네이티브 `fetch` 래퍼 (의존성 0, JWT 인터셉터 자체 구현) |
+| 차트       | Recharts v3                                              |
+| 애니메이션 | Framer Motion                                            |
+| 마크다운   | react-markdown + remark-gfm                              |
+| 아이콘     | lucide-react                                             |
+| PWA        | Serwist (`@serwist/next`)                                |
+| API 모킹   | MSW (Mock Service Worker)                                |
+| Linter     | ESLint (`eslint-config-next`)                            |
+| 배포       | Vercel                                                   |
 
 ---
 
 ## 🗂️ 프로젝트 구조
 
 ```
-agriguard-web/
+SDG-FRONTEND/
 ├── app/
-│   ├── (auth)/login · signup
-│   ├── (main)/
+│   ├── (auth)/                  # 인증 라우트 그룹
+│   │   ├── login/
+│   │   └── signup/
+│   ├── (main)/                  # 메인 앱 라우트 그룹
 │   │   ├── dashboard/
-│   │   ├── diagnose/ · diagnose/[id]/
+│   │   ├── diagnosis/
 │   │   ├── chat/
 │   │   ├── calendar/
-│   │   └── products/
-│   └── api/upload/route.ts       # 이미지 업로드 BFF
+│   │   └── mypage/
+│   ├── geocode/route.ts         # 좌표 → 주소 변환 프록시
+│   ├── ~offline/                # PWA 오프라인 폴백
+│   ├── layout.tsx · providers.tsx
+│   └── manifest.ts              # PWA 매니페스트
 │
 ├── components/
-│   ├── ui/                       # shadcn/ui
-│   ├── camera/ · diagnose/ · dashboard/
-│   ├── chat/ · calendar/
-│   └── common/                   # BottomNav, ErrorBoundary 등
+│   ├── auth/ · dashboard/
+│   ├── disease/                 # 질병 상세 모달 등
+│   ├── mypage/
+│   └── pwa/                     # 설치 프롬프트
 │
 ├── lib/
-│   ├── api/                      # Axios 인스턴스 + API 함수
-│   ├── queries/                  # TanStack Query 훅
-│   ├── store/                    # Zustand 스토어
-│   └── hooks/                    # useCamera, useGeolocation
+│   ├── api/                     # fetch 클라이언트 + API 함수
+│   ├── auth/                    # 토큰 저장/재발급
+│   ├── queries/                 # TanStack Query 훅
+│   ├── data/mock/               # MSW용 목 데이터
+│   ├── types/                   # 도메인 타입
+│   └── validation/              # 폼 검증 로직
 │
-├── types/
-├── public/manifest.json          # PWA 매니페스트
-└── vercel.json
+├── mocks/                       # MSW 핸들러
+├── public/                      # 아이콘, 매니페스트 에셋
+└── api-spec.md                  # 백엔드 API 명세서
 ```
 
 ---
@@ -122,98 +117,89 @@ agriguard-web/
 ### 요구사항
 
 - Node.js 20+
-- pnpm 9+
+- npm 10+
 
 ### 설치 및 실행
 
 ```bash
-git clone https://github.com/your-org/agriguard-web.git
-cd agriguard-web
+git clone <repo-url>
+cd SDG-FRONTEND
 
-pnpm install
+npm install
 
+# 환경변수 설정 (아래 참고)
 cp .env.example .env.local
-# .env.local 환경변수 입력 후 실행
 
-pnpm dev
+npm run dev
 ```
+
+개발 서버는 기본적으로 `http://localhost:3000`에서 실행된다.
+
+### 스크립트
+
+| 명령                 | 설명                       |
+| -------------------- | -------------------------- |
+| `npm run dev`        | 개발 서버 실행             |
+| `npm run build`      | 프로덕션 빌드              |
+| `npm run start`      | 빌드 결과 실행             |
+| `npm run lint`       | ESLint 검사                |
+| `npm run type-check` | 타입 검사 (`tsc --noEmit`) |
 
 ### 환경변수
 
 ```bash
 # .env.local
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
-NEXT_PUBLIC_APP_ENV=development
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080   # 백엔드 API 베이스 URL
+NEXT_PUBLIC_USE_MOCK=true                          # true면 MSW 목 응답 사용, false면 실제 API 호출
+NEXT_PUBLIC_APP_ENV=development                    # development | production
 ```
 
----
-
-## 🌐 배포
-
-Vercel을 통해 **Preview / Production 환경을 분리**하여 배포한다.
-
-| 브랜치 | 환경 | URL |
-|--------|------|-----|
-| `main` | Production | `agriguard.vercel.app` |
-| `dev` | Preview (고정) | `dev.agriguard.vercel.app` |
-| `feat/*` | Preview (임시) | PR 생성 시 자동 발급 |
+> `NEXT_PUBLIC_USE_MOCK`이 `false`가 아니면 MSW 목 데이터로 동작하므로, 백엔드 없이도 전체 플로우를 확인할 수 있다.
 
 ---
 
 ## 📡 주요 API 연동
 
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| `POST` | `/api/v1/auth/signup` | 회원가입 |
-| `POST` | `/api/v1/auth/login` | 로그인 |
-| `POST` | `/api/v1/diagnose` | 이미지 업로드 및 진단 요청 |
-| `GET` | `/api/v1/diagnose/{id}` | 진단 결과 조회 (폴링) |
-| `GET` | `/api/v1/diagnose/history` | 진단 이력 목록 |
-| `GET` | `/api/v1/risk/current` | 현재 위험도 조회 |
-| `GET` | `/api/v1/dashboard` | 대시보드 데이터 |
-| `POST` | `/api/v1/chat` | AI 챗봇 메시지 전송 |
-| `GET` | `/api/v1/treatment/history` | 방제 이력 조회 |
+백엔드 계약 전체는 [`api-spec.md`](./api-spec.md)에 정리되어 있다.
 
----
+| Method | Endpoint          | 설명                        |
+| ------ | ----------------- | --------------------------- |
+| `POST` | `/auth/signup`    | 회원가입                    |
+| `POST` | `/auth/login`     | 로그인                      |
+| `POST` | `/auth/refresh`   | 토큰 재발급 (HttpOnly 쿠키) |
+| `GET`  | `/users/me`       | 내 정보 조회                |
+| `GET`  | `/users/me/stats` | 마이페이지 통계             |
+| `POST` | `/diagnoses`      | 이미지 진단 요청            |
+| `GET`  | `/diagnoses`      | 진단 기록 목록              |
+| `GET`  | `/diagnoses/{id}` | 진단 상세 조회              |
+| `GET`  | `/calendar`       | 월별 캘린더 기록            |
+| `GET`  | `/weather`        | 지역별 기상 조회            |
+| `POST` | `/chat/messages`  | 챗봇 메시지 전송            |
 
-## 🧭 개발 일정
-
-| Phase | 기간 | 내용 |
-|-------|------|------|
-| Phase 1 | 3/27 ~ 4/3 | 환경 구성, 디자인 시스템, 인증 |
-| Phase 2 | 4/4 ~ 4/24 | P0 — 카메라·진단·챗봇·대시보드 |
-| Phase 3 | 4/25 ~ 5/15 | P1 — 캘린더·차트·약제·PWA |
-| Phase 4 | 5/16 ~ | QA, 성능 최적화, 크로스 브라우저 |
+> 엔드포인트 경로·필드는 `api-spec.md`를 기준으로 하며, 위 표는 요약이다.
 
 ---
 
 ## 🤝 컨벤션
 
-### 브랜치
-
-```
-main      배포 브랜치 (보호)
-├── dev   개발 통합 브랜치
-│   └── feat/xxx
-└── hotfix/xxx
-```
-
 ### 커밋 메시지
 
 ```
-feat: 카메라 캡처 컴포넌트 구현
-fix: 진단 결과 폴링 중복 요청 제거
-chore: TanStack Query 설정 추가
-style: DiagnoseCard 레이아웃 조정
+Feat:   새 기능
+Fix:    버그 수정
+Style:  UI/스타일 변경
+Docs:   문서
+Refactor: 리팩터링
 ```
 
----
+이슈 번호를 함께 표기한다. 예: `Feat:#27 사진 진단 API 연동`
 
-## 👥 팀원
+### 브랜치
 
-| 역할 | 이름 | 담당 |
-|------|------|------|
-| Frontend | **기훈** | 카메라·진단 플로우, 대시보드, PWA, 배포 |
+```
+main                배포 브랜치 (PR 경유, 직접 push 금지)
+└── feature/<issue>-<topic>
+```
 
 ---
 
@@ -221,8 +207,8 @@ style: DiagnoseCard 레이아웃 조정
 
 <br/>
 
-**SDG PROJECT · 2025**
+**SDG PROJECT**
 
-*스마트팜 없이도, 스마트하게 농사짓다*
+_스마트팜 없이도, 스마트하게 농사짓다_
 
 </div>
