@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Leaf } from "lucide-react";
+import Image from "next/image";
 import { AuthField } from "@/components/auth/AuthField";
 import { useLogin } from "@/lib/queries/useAuth";
 import { USE_MOCK } from "@/lib/api/client";
@@ -57,9 +57,13 @@ export default function LoginPage() {
     <>
       {/* 브랜드 */}
       <div className="mb-7 flex flex-col items-center gap-3">
-        <div className="glass-pill-dark flex h-16 w-16 items-center justify-center rounded-[22px]">
-          <Leaf size={32} className="text-white" />
-        </div>
+        <Image
+          src="/logo.png"
+          alt="Agriguard"
+          width={64}
+          height={71}
+          priority
+        />
         <div
           className="text-xl font-extrabold tracking-tight"
           style={{ color: "rgb(var(--glass-text) / 0.95)" }}

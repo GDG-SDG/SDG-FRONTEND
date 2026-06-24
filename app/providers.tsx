@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { USE_MOCK } from "@/lib/api/client";
 import { refresh } from "@/lib/api/auth";
 import { setAccessToken } from "@/lib/auth/token";
@@ -20,6 +21,7 @@ function BootSplash() {
       className="page-bg flex flex-col items-center justify-center"
       style={{ height: "100dvh", gap: "16px", padding: "0 32px" }}
     >
+      <Image src="/logo.png" alt="Agriguard" width={84} height={93} priority />
       <div
         className="w-10 h-10 rounded-full border-4 spin-anim"
         style={{
