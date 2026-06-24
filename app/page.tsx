@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Leaf } from "lucide-react";
+import Image from "next/image";
 import { getAccessToken } from "@/lib/auth/token";
 
 const SPLASH_DURATION_MS = 1600;
@@ -31,9 +31,13 @@ export default function SplashPage() {
         transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
         className="flex flex-col items-center gap-5"
       >
-        <div className="glass-pill-dark w-20 h-20 rounded-[28px] flex items-center justify-center">
-          <Leaf size={40} className="text-white" />
-        </div>
+        <Image
+          src="/logo.png"
+          alt="Agriguard"
+          width={104}
+          height={115}
+          priority
+        />
         <div className="flex flex-col items-center gap-1.5">
           <div
             className="text-2xl font-extrabold tracking-tight"
